@@ -193,8 +193,12 @@ const App: FC<StateProps> = ({
         return <Auth />;
       case AppScreens.main:
         // return <RichTextEditor />;
-        // return (<BgWallpaper />);
-        return <Main isMobile={isMobile} />;
+        return (
+          <>
+            <Main isMobile={isMobile} />
+          </>
+        );
+        // return <Main isMobile={isMobile} />;
       case AppScreens.lock:
         return <LockScreen isLocked={isScreenLocked} />;
       case AppScreens.inactive:

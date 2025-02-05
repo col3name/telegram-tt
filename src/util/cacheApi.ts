@@ -1,4 +1,4 @@
-import { ELECTRON_HOST_URL, IS_PACKAGED_ELECTRON } from '../config';
+import {CUSTOM_BG_CACHE_NAME, ELECTRON_HOST_URL, IS_PACKAGED_ELECTRON} from '../config';
 
 // eslint-disable-next-line no-restricted-globals
 const cacheApi = self.caches;
@@ -31,8 +31,13 @@ export async function fetch(
     const request = IS_PACKAGED_ELECTRON
       ? `${ELECTRON_HOST_URL}/${key.replace(/:/g, '_')}`
       : new Request(key.replace(/:/g, '_'));
+
+
     const cache = await cacheApi.open(cacheName);
     const response = await cache.match(request);
+    if (cacheName === CUSTOM_BG_CACHE_NAME) {
+      // debugger;
+    }
     if (!response) {
       return undefined;
     }

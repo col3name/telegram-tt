@@ -180,7 +180,7 @@ const RadialPatternBackground = ({
         `--_bg-2: ${backgroundColors[1] || backgroundColors[0]}`,
       )}
     >
-      <canvas className={styles.canvas} ref={canvasRef} />
+      <canvas id="radialCanvas" className={styles.canvas} ref={canvasRef} />
     </div>
   );
 };

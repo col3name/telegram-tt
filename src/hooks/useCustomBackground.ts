@@ -16,12 +16,14 @@ const useCustomBackground = (theme: ThemeKey, settingValue?: string) => {
       return;
     }
 
+    // debugger;
     if (settingValue.startsWith('#')) {
       setValue(settingValue);
     } else {
       cacheApi.fetch(CUSTOM_BG_CACHE_NAME, theme, cacheApi.Type.Blob)
         .then((blob) => {
           const url = URL.createObjectURL(blob);
+          // debugger;
           preloadImage(url)
             .then(() => {
               setValue(`url(${url})`);

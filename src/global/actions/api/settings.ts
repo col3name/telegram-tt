@@ -184,6 +184,7 @@ addActionHandler('uploadWallpaper', async (global, actions, payload): Promise<vo
   const file = payload;
   const previewBlobUrl = URL.createObjectURL(file);
 
+  debugger;
   global = {
     ...global,
     settings: {

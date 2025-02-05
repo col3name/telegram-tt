@@ -24,6 +24,7 @@ import Loading from '../../ui/Loading';
 import WallpaperTile from './WallpaperTile';
 
 import './SettingsGeneralBackground.scss';
+import { maskImages } from '../../bgWallpaper/AnimatedBackground';
 
 type OwnProps = {
   isActive?: boolean;
@@ -36,6 +37,7 @@ type StateProps = {
   isBlurred?: boolean;
   loadedWallpapers?: ApiWallpaper[];
   theme: ThemeKey;
+  pattern?: string;
 };
 
 const SUPPORTED_TYPES = 'image/jpeg';
@@ -46,6 +48,7 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
   isActive,
   onScreenSelect,
   onReset,
+  pattern,
   background,
   isBlurred,
   loadedWallpapers,
@@ -90,13 +93,18 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
       background: undefined,
       backgroundColor: undefined,
       isBlurred: true,
+      pattern: undefined,
+      colors: undefined,
       patternColor: theme === 'dark' ? DARK_THEME_PATTERN_COLOR : DEFAULT_PATTERN_COLOR,
     });
   }, [setThemeSettings, theme]);
 
   const handleWallPaperSelect = useCallback((slug: string) => {
-    setThemeSettings({ theme: themeRef.current!, background: slug });
-    const currentWallpaper = loadedWallpapers && loadedWallpapers.find((wallpaper) => wallpaper.slug === slug);
+    console.log({slug, loadedWallpapers});
+    setThemeSettings({ theme: themeRef.current!, background: slug, pattern: undefined });
+    const currentWallpaper = loadedWallpapers && loadedWallpapers.find((wallpaper: ApiWallpaper) => wallpaper.slug === slug);
+    console.log({currentWallpaper});
+    debugger;
     if (currentWallpaper?.document.thumbnail) {
       getAverageColor(currentWallpaper.document.thumbnail.dataUri)
         .then((color) => {
@@ -119,6 +127,34 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
   });
 
   const isUploading = loadedWallpapers?.[0] && loadedWallpapers[0].slug === UPLOADING_WALLPAPER_SLUG;
+
+  const onSelectPattern = useCallback((newPattern: string) => {
+    const colors: Record<string, string[]> = {
+      animals: ['#dbddbb', '#6ba587', '#d5d88d', '#88b884'],
+      beach: ['#fec496', '#dd6cb9', '#962fbf', '#4f5bd5'],
+      astronaut_cats: ['#7ed281', '#e68896', '#73c4e6', '#e5a7eb'],
+      cats_and_dogs: ['#85d685', '#67a3f2', '#8fe1d6', '#dceb92'],
+      christmas: ['#efd359', '#e984d8', '#ac86ed', '#40cdde'],
+      fantasy: ['#e8c06e', '#f29ebf', '#f0e486', '#eaa36e'],
+      late_night_delight: ['#b9e2ff', '#eccbff', '#a2b4ff', '#daeacb'],
+      magic: ['#f0c07a', '#afd677', '#e4d573', '#7fc289'],
+      math: ['#6c8cd4', '#d4a7c9', '#b2b1ee', '#b2b1ee'],
+      paris: ['#f7dd6d', '#e96caf', '#edac4c', '#a464f4'],
+      games: ['#85d685', '#67a3f2', '#8fe1d6', '#dceb92'],
+      snowflakes: ['#4f5bd5', '#962fbf', '#dd6cb9', '#fec496'],
+      space: ['#fbd9e6', '#fb9ae5', '#d5f7ff', '#73caff'],
+      star_wars: ['#8adbf2', '#888dec', '#e39fea', '#679ced'],
+      sweets: ['#b0cdeb', '#9fb0ea', '#bbead5', '#b2e3dd'],
+      tattoos: ['#ffc3b2', '#e2c0ff', '#ffe7b2', '#ffe7b2'],
+      underwater_world: ['#97beeb', '#b1e9ea', '#c6b1ef', '#efb7dc'],
+      zoo: ['#e4b2ea', '#8376c2', '#eab9d9', '#b493e6'],
+      unicorn: ['#d1a3e2', '#edd594', '#e5a1d0', '#ecd893'],
+    };
+
+    const colors1 = newPattern in colors ? colors[newPattern] : undefined;
+    console.log({ colors1, newPattern });
+    setThemeSettings({ theme: themeRef.current!, pattern: newPattern, colors: colors1 });
+  }, [setThemeSettings]);
 
   return (
     <div className="SettingsGeneralBackground settings-content custom-scroll">
@@ -151,8 +187,14 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
         />
       </div>
 
+      <div>{`Selected ${pattern}`}</div>
       {loadedWallpapers ? (
         <div className="settings-wallpapers">
+          {maskImages.map((value: string) => (
+            <div key={value} style={{backgroundColor: 'gray'}} onClick={() => onSelectPattern(value)}>
+              {value}
+            </div>
+          ))}
           {loadedWallpapers.map((wallpaper) => (
             <WallpaperTile
               key={wallpaper.slug}
@@ -173,10 +215,12 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
 export default memo(withGlobal<OwnProps>(
   (global): StateProps => {
     const theme = selectTheme(global);
-    const { background, isBlurred } = global.settings.themes[theme] || {};
+    const { background, isBlurred, pattern } = global.settings.themes[theme] || {};
     const { loadedWallpapers } = global.settings;
 
+    // console.log( global.settings.themes, loadedWallpapers);
     return {
+      pattern,
       background,
       isBlurred,
       loadedWallpapers,

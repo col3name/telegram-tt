@@ -97,6 +97,7 @@ import MiddleHeaderPanes from './MiddleHeaderPanes';
 import PremiumRequiredPlaceholder from './PremiumRequiredPlaceholder';
 import ReactorListModal from './ReactorListModal.async';
 import MiddleSearch from './search/MiddleSearch.async';
+import AnimatedBackground from '../bgWallpaper/AnimatedBackground.async';
 
 import './MiddleColumn.scss';
 import styles from './MiddleColumn.module.scss';
@@ -107,6 +108,7 @@ interface OwnProps {
 }
 
 type StateProps = {
+  pattern?: string;
   chatId?: string;
   threadId?: ThreadId;
   isComments?: boolean;
@@ -169,6 +171,7 @@ function MiddleColumn({
   chatId,
   threadId,
   isComments,
+  pattern,
   messageListType,
   isMobile,
   chat,
@@ -424,8 +427,8 @@ function MiddleColumn({
   const bgClassName = buildClassName(
     styles.background,
     styles.withTransition,
-    customBackground && styles.customBgImage,
-    backgroundColor && styles.customBgColor,
+    !pattern && customBackground && styles.customBgImage,
+    !pattern && backgroundColor && styles.customBgColor,
     customBackground && isBackgroundBlurred && styles.blurred,
     isRightColumnShown && styles.withRightColumn,
     IS_ELECTRON && !(renderingChatId && renderingThreadId) && styles.draggable,
@@ -503,8 +506,10 @@ function MiddleColumn({
       )}
       <div
         className={bgClassName}
-        style={customBackgroundValue ? `--custom-background: ${customBackgroundValue}` : undefined}
-      />
+        // style={customBackgroundValue ? `--custom-background: ${customBackgroundValue}` : undefined}
+      >
+        <AnimatedBackground theme={theme} />
+      </div>
       <div id="middle-column-portals" />
       {Boolean(renderingChatId && renderingThreadId) && (
         <>
@@ -717,7 +722,7 @@ export default memo(withGlobal<OwnProps>(
   (global, { isMobile }): StateProps => {
     const theme = selectTheme(global);
     const {
-      isBlurred: isBackgroundBlurred, background: customBackground, backgroundColor, patternColor,
+      isBlurred: isBackgroundBlurred, background: customBackground, pattern, backgroundColor, patternColor,
     } = global.settings.themes[theme] || {};
 
     const {
@@ -733,6 +738,7 @@ export default memo(withGlobal<OwnProps>(
       customBackground,
       backgroundColor,
       patternColor,
+      pattern,
       isLeftColumnShown,
       isRightColumnShown: selectIsRightColumnShown(global, isMobile),
       isBackgroundBlurred,
@@ -796,7 +802,7 @@ export default memo(withGlobal<OwnProps>(
     );
 
     const isContactRequirePremium = selectUserFullInfo(global, chatId)?.isContactRequirePremium;
-    console.log({isContactRequirePremium});
+    // console.log({isContactRequirePremium, pattern});
     return {
       ...state,
       chatId,
