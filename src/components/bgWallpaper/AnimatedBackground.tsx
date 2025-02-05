@@ -239,7 +239,7 @@ function updateMask(config, wallpaperContainer: HTMLDivElement, gradientCanvas: 
       break;
     }
     case 'underwater_world': {
-      url = UnicornPattern;
+      url = UnderwaterWorldPattern;
       break;
     }
     case 'zoo': {
