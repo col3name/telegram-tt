@@ -25,8 +25,11 @@ export default function parseHtmlAsFormattedText(
   html: string, withMarkdownLinks = false, skipMarkdown = false,
 ): ApiFormattedText {
   const fragment = document.createElement('div');
-  fragment.innerHTML = skipMarkdown ? html
+  const innerHTML = skipMarkdown ? html
     : withMarkdownLinks ? parseMarkdown(parseMarkdownLinks(html)) : parseMarkdown(html);
+  // const innerHTML = html;
+  console.log({ html, innerHTML });
+  fragment.innerHTML = innerHTML;
   fixImageContent(fragment);
   const text = fragment.innerText.trim().replace(/\u200b+/g, '');
   const trimShift = fragment.innerText.indexOf(text[0]);

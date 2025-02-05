@@ -108,6 +108,10 @@ export default function createConfig(
     module: {
       rules: [
         {
+          test: /\.glsl$/,
+          use: 'webpack-glsl-loader',
+        },
+        {
           test: /\.(ts|tsx|js|mjs|cjs)$/,
           loader: 'babel-loader',
           exclude: /node_modules/,

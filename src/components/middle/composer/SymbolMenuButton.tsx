@@ -20,7 +20,9 @@ import SymbolMenu from './SymbolMenu.async';
 const MOBILE_KEYBOARD_HIDE_DELAY_MS = 100;
 
 type OwnProps = {
+  children: React.ReactNode;
   chatId: string;
+  iconName?: string;
   threadId?: ThreadId;
   isMobile?: boolean;
   isReady?: boolean;
@@ -54,7 +56,9 @@ type OwnProps = {
 
 const SymbolMenuButton: FC<OwnProps> = ({
   chatId,
+  iconName = 'smile',
   threadId,
+  children,
   isMobile,
   canSendGifs,
   canSendStickers,
@@ -105,8 +109,12 @@ const SymbolMenuButton: FC<OwnProps> = ({
     openSymbolMenu();
     const triggerEl = triggerRef.current;
     if (!triggerEl) return;
-    const { x, y } = triggerEl.getBoundingClientRect();
-    setContextMenuAnchor({ x, y });
+    const rect = triggerEl.getBoundingClientRect();
+    console.log({triggerEl});
+    if (rect?.x && rect?.y) {
+      const { x, y } = rect;
+      setContextMenuAnchor({ x, y });
+    }
   });
 
   const handleSearchOpen = useLastCallback((type: 'stickers' | 'gifs') => {
@@ -163,8 +171,13 @@ const SymbolMenuButton: FC<OwnProps> = ({
           onActivate={handleActivateSymbolMenu}
           ariaLabel="Choose emoji, sticker or GIF"
         >
+          {/*smile*/}
           <div ref={triggerRef} className="symbol-menu-trigger" />
-          <Icon name="smile" />
+          { children ? (
+            children
+          ) : (
+            <Icon name={iconName} />
+          )}
         </ResponsiveHoverButton>
       )}
 

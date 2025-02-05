@@ -796,7 +796,7 @@ export default memo(withGlobal<OwnProps>(
     );
 
     const isContactRequirePremium = selectUserFullInfo(global, chatId)?.isContactRequirePremium;
-
+    console.log({isContactRequirePremium});
     return {
       ...state,
       chatId,

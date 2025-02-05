@@ -1,5 +1,5 @@
 import type {
-  ChangeEvent, FormEvent, RefObject,
+  ChangeEvent, FormEvent, PropsWithChildren, RefObject,
 } from 'react';
 import type { FC } from '../../lib/teact/teact';
 import React, { memo } from '../../lib/teact/teact';
@@ -8,7 +8,7 @@ import buildClassName from '../../util/buildClassName';
 
 import useOldLang from '../../hooks/useOldLang';
 
-type OwnProps = {
+type OwnProps = PropsWithChildren & {
   ref?: RefObject<HTMLInputElement>;
   id?: string;
   className?: string;
@@ -35,6 +35,7 @@ type OwnProps = {
 const InputText: FC<OwnProps> = ({
   ref,
   id,
+  children,
   className,
   value,
   label,
@@ -95,6 +96,7 @@ const InputText: FC<OwnProps> = ({
       {labelText && (
         <label htmlFor={id}>{labelText}</label>
       )}
+      {children && children}
     </div>
   );
 };

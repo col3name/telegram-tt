@@ -29,6 +29,7 @@ import LeftMainHeader from './LeftMainHeader';
 import './LeftMain.scss';
 
 type OwnProps = {
+  isMobile?: boolean;
   content: LeftColumnContent;
   searchQuery?: string;
   searchDate?: number;
@@ -52,6 +53,7 @@ const BUTTON_CLOSE_DELAY_MS = 250;
 let closeTimeout: number | undefined;
 
 const LeftMain: FC<OwnProps> = ({
+  isMobile,
   content,
   searchQuery,
   searchDate,
@@ -165,6 +167,7 @@ const LeftMain: FC<OwnProps> = ({
   const lang = useOldLang();
 
   return (
+    // <div id="LeftROOT">
     <div
       id="LeftColumn-main"
       onMouseEnter={!IS_TOUCH_ENV ? handleMouseEnter : undefined}
@@ -196,6 +199,9 @@ const LeftMain: FC<OwnProps> = ({
             case LeftColumnContent.ChatList:
               return (
                 <ChatFolders
+                  // hideFolder={isMobile === undefined ? false : isMobile}
+                  // hideChats={false}
+                  isMobile={isMobile}
                   shouldHideFolderTabs={isForumPanelVisible}
                   onSettingsScreenSelect={onSettingsScreenSelect}
                   onLeftColumnContentChange={onContentChange}
@@ -245,6 +251,7 @@ const LeftMain: FC<OwnProps> = ({
         onNewGroup={handleSelectNewGroup}
       />
     </div>
+    // </div>
   );
 };
 

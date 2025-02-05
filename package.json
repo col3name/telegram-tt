@@ -130,7 +130,8 @@
     "tsx": "^4.11.0",
     "typescript": "^5.4.5",
     "webpack": "^5.91.0",
-    "webpack-dev-server": "^5.0.4"
+    "webpack-dev-server": "^5.0.4",
+    "webpack-glsl-loader": "^1.0.1"
   },
   "dependencies": {
     "@cryptography/aes": "^0.1.1",
@@ -146,6 +147,8 @@
     "pako": "^2.1.0",
     "path-browserify": "^1.0.1",
     "qr-code-styling": "github:zubiden/qr-code-styling#dbbfed0",
+    "telegram": "^2.26.16",
+    "tweakpane": "^4.0.5",
     "v8-compile-cache": "^2.4.0"
   },
   "optionalDependencies": {

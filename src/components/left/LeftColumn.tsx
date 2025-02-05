@@ -28,11 +28,14 @@ import ArchivedChats from './ArchivedChats.async';
 import LeftMain from './main/LeftMain';
 import NewChat from './newChat/NewChat.async';
 import Settings from './settings/Settings.async';
+import LeftDesktopHeader from './main/LeftDesktopHeader';
+import ChatFoldersDesktop from './main/ChatFoldersDesktop';
 
 import './LeftColumn.scss';
 
 interface OwnProps {
   ref: RefObject<HTMLDivElement>;
+  isMobile?: boolean;
 }
 
 type StateProps = {
@@ -70,6 +73,7 @@ const RESET_TRANSITION_DELAY_MS = 250;
 
 function LeftColumn({
   ref,
+  isMobile,
   searchQuery,
   searchDate,
   isFirstChatFolderActive,
@@ -492,6 +496,7 @@ function LeftColumn({
       case ContentType.Settings:
         return (
           <Settings
+            isMobile={isMobile}
             isActive={isActive}
             currentScreen={settingsScreen}
             foldersState={foldersState}
@@ -525,6 +530,7 @@ function LeftColumn({
       default:
         return (
           <LeftMain
+            isMobile={isMobile}
             content={content}
             isClosingSearch={isClosingSearch}
             searchQuery={searchQuery}
@@ -544,27 +550,64 @@ function LeftColumn({
         );
     }
   }
+  const { closeForumPanel } = getActions();
+
+  const handleSelectSettings = useLastCallback(() => {
+    setContent(LeftColumnContent.Settings);
+  });
+
+  const handleSelectContacts = useLastCallback(() => {
+    setContent(LeftColumnContent.Contacts);
+  });
+
+  const handleSelectArchived = useLastCallback(() => {
+    setContent(LeftColumnContent.Archived);
+    closeForumPanel();
+  });
 
   return (
-    <Transition
-      ref={ref}
-      name={shouldSkipHistoryAnimations ? 'none' : LAYERS_ANIMATION_NAME}
-      renderCount={RENDER_COUNT}
-      activeKey={contentType}
-      shouldCleanup
-      cleanupExceptionKey={ContentType.Main}
-      shouldWrap
-      wrapExceptionKey={ContentType.Main}
-      id="LeftColumn"
-      withSwipeControl
-    >
-      {renderContent}
-    </Transition>
+    <div id="LeftColumnRoot">
+      {!isMobile && (
+        <div id="LeftMyColumn">
+          <LeftDesktopHeader
+            // shouldHideSearch={isForumPanelVisible}
+            content={content}
+            onSearchQuery={handleSearchQuery}
+            onSelectSettings={handleSelectSettings}
+            onSelectContacts={handleSelectContacts}
+            onSelectArchived={handleSelectArchived}
+            onReset={handleReset}
+            shouldSkipTransition={shouldSkipHistoryAnimations}
+          />
+          {/*{ !isMobile && (*/}
+          <ChatFoldersDesktop
+            // shouldHideFolderTabs={isForumPanelVisible}
+            // foldersDispatch={foldersDispatch}
+            // isForumPanelOpen={isForumPanelVisible}
+            hideFolder={false}
+          />
+        </div>
+      )}
+      <Transition
+        ref={ref}
+        name={shouldSkipHistoryAnimations ? 'none' : LAYERS_ANIMATION_NAME}
+        renderCount={RENDER_COUNT}
+        activeKey={contentType}
+        shouldCleanup
+        cleanupExceptionKey={ContentType.Main}
+        shouldWrap
+        wrapExceptionKey={ContentType.Main}
+        id="LeftColumn"
+        withSwipeControl
+      >
+        {renderContent}
+      </Transition>
+    </div>
   );
 }
 
 export default memo(withGlobal<OwnProps>(
-  (global): StateProps => {
+  (global, {isMobile}): StateProps => {
     const tabState = selectTabState(global);
     const {
       globalSearch: {
@@ -595,6 +638,7 @@ export default memo(withGlobal<OwnProps>(
     const forumPanelChatId = tabState.forumPanelChatId;
 
     return {
+      isMobile,
       searchQuery: query,
       searchDate: minDate,
       isFirstChatFolderActive: activeChatFolder === 0,

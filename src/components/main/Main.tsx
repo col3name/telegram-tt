@@ -536,7 +536,8 @@ const Main = ({
 
   return (
     <div ref={containerRef} id="Main" className={className}>
-      <LeftColumn ref={leftColumnRef} />
+      {/*root*/}
+      <LeftColumn ref={leftColumnRef} isMobile={isMobile} />
       <MiddleColumn leftColumnRef={leftColumnRef} isMobile={isMobile} />
       <RightColumn isMobile={isMobile} />
       <MediaViewer isOpen={isMediaViewerOpen} />

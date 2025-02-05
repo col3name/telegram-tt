@@ -37,7 +37,7 @@ export default function renderText(
     return [part];
   }
 
-  return compact(filters.reduce((text, filter) => {
+  let array = filters.reduce((text, filter) => {
     switch (filter) {
       case 'escape_html':
         return escapeHtml(text);
@@ -80,7 +80,9 @@ export default function renderText(
     }
 
     return text;
-  }, [part] as TextPart[]));
+  }, [part] as TextPart[]);
+  // console.log('array', [part], filters);
+  return compact(array);
 }
 
 function escapeHtml(textParts: TextPart[]): TextPart[] {

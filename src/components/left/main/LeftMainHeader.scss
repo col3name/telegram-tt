@@ -153,3 +153,13 @@
     }
   }
 }
+
+.left-chat-groups {
+  height: var(--header-height);
+  padding: 0.375rem 0.8125rem 0.5rem 0.8125rem;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background-color: var(--color-background);
+}
+

@@ -4,7 +4,12 @@ import React, {
 } from '../../../../lib/teact/teact';
 import { getActions, getGlobal, withGlobal } from '../../../../global';
 
-import type { ApiChatlistExportedInvite } from '../../../../api/types';
+import {
+  ApiChatlistExportedInvite,
+  ApiMessageEntityCustomEmoji,
+  ApiMessageEntityTypes,
+  ApiSticker
+} from '../../../../api/types';
 import type {
   FolderEditDispatch,
   FoldersState,
@@ -31,6 +36,8 @@ import FloatingActionButton from '../../../ui/FloatingActionButton';
 import InputText from '../../../ui/InputText';
 import ListItem from '../../../ui/ListItem';
 import Spinner from '../../../ui/Spinner';
+import useFlag from '../../../../hooks/useFlag';
+import SymbolMenuButton from '../../../middle/composer/SymbolMenuButton';
 
 type OwnProps = {
   state: FoldersState;
@@ -40,6 +47,7 @@ type OwnProps = {
   onShareFolder: VoidFunction;
   onOpenInvite: (url: string) => void;
   isActive?: boolean;
+  isMobile?: boolean;
   isOnlyInvites?: boolean;
   onReset: () => void;
   onBack: () => void;
@@ -71,6 +79,7 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
   onShareFolder,
   onOpenInvite,
   isActive,
+  isMobile,
   onReset,
   isRemoved,
   onBack,
@@ -94,6 +103,7 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
 
   const [isIncludedChatsListExpanded, setIsIncludedChatsListExpanded] = useState(false);
   const [isExcludedChatsListExpanded, setIsExcludedChatsListExpanded] = useState(false);
+  const [isSymbolMenuOpen, openSymbolMenu, closeSymbolMenu] = useFlag();
 
   useEffect(() => {
     if (isRemoved) {
@@ -154,6 +164,29 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const { currentTarget } = event;
     dispatch({ type: 'setTitle', payload: currentTarget.value.trim() });
+  }, [dispatch]);
+
+  const handleChangeEmotion = useCallback((emoticon: string) => {
+    console.log('handleChangeEmotion', emoticon);
+    const title = state.folder.title.text + ' ' + emoticon;
+    dispatch({ type: 'setTitle', payload: title });
+    closeSymbolMenu();
+  }, [dispatch]);
+
+  const onCustomEmojiSelect = useCallback((emoji: ApiSticker) => {
+    console.log('onCustomEmojiSelect', emoji);
+    if (emoji.isCustomEmoji) {
+      const data: ApiMessageEntityCustomEmoji = {
+        type: ApiMessageEntityTypes.CustomEmoji,
+        offset: 8,
+        length: 5,
+        // documentId: emoji.id,
+        documentId: '5424921351322347779',
+      };
+      dispatch({ type: 'setEmoticon', payload: data });
+      closeSymbolMenu();
+    }
+    // dispatch({ type: 'setEmoticon', payload: emoticon });
   }, [dispatch]);
 
   const handleSubmit = useCallback(() => {
@@ -279,6 +312,7 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
     );
   }
 
+  const noop = () => {};
   return (
     <div className="settings-fab-wrapper">
       <div className="settings-content no-border custom-scroll">
@@ -297,12 +331,41 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
           )}
 
           <InputText
-            className="mb-0"
+            className="mb-0 mr-2"
             label={lang('FilterNameHint')}
             value={state.folder.title.text}
             onChange={handleChange}
             error={state.error && state.error === ERROR_NO_TITLE ? ERROR_NO_TITLE : undefined}
-          />
+          >
+            <div className="settings-folders-emoji-button">
+              <SymbolMenuButton
+                chatId=""
+                iconName="folder-badge"
+                // threadId={threadId}
+                isMobile={isMobile}
+                isReady
+                isSymbolMenuOpen={isSymbolMenuOpen}
+                openSymbolMenu={openSymbolMenu}
+                closeSymbolMenu={closeSymbolMenu}
+                onCustomEmojiSelect={onCustomEmojiSelect}
+                onRemoveSymbol={noop}
+                onEmojiSelect={handleChangeEmotion}
+                isAttachmentModal
+                canSendPlainText
+                className="attachment-modal-symbol-menu with-menu-transitions"
+                idPrefix="attachment"
+                forceDarkTheme={false}
+              >
+                {state.folder.emoticon && (
+                  <span>{state.folder.emoticon}</span>
+                )}
+              </SymbolMenuButton>
+            </div>
+          </InputText>
+
+          {/*<button onClick={openSymbolMenu}>open*/}
+          {/*</button>*/}
+
         </div>
 
         {!isOnlyInvites && (
@@ -384,12 +447,14 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
         onClick={handleSubmit}
         ariaLabel={state.mode === 'edit' ? 'Save changes' : 'Create folder'}
       >
+        save folder
         {state.isLoading ? (
           <Spinner color="white" />
         ) : (
           <Icon name="check" />
         )}
       </FloatingActionButton>
+
     </div>
   );
 };

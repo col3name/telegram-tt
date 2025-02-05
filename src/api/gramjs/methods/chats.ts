@@ -1070,6 +1070,7 @@ export async function editChatFolder({
     filter,
   }));
 
+  console.log({folderUpdate});
   if (isActionSuccessful) {
     sendApiUpdate({
       '@type': 'updateChatFolder',

@@ -31,6 +31,8 @@ import Main from './main/Main.async';
 import Transition from './ui/Transition';
 
 import styles from './App.module.scss';
+import {RichTextEditor} from "./main/RichTextEditor";
+import {BgWallpaper} from "./bgWallpaper";
 
 type StateProps = {
   authState: GlobalState['authState'];
@@ -190,6 +192,8 @@ const App: FC<StateProps> = ({
       case AppScreens.auth:
         return <Auth />;
       case AppScreens.main:
+        // return <RichTextEditor />;
+        // return (<BgWallpaper />);
         return <Main isMobile={isMobile} />;
       case AppScreens.lock:
         return <LockScreen isLocked={isScreenLocked} />;

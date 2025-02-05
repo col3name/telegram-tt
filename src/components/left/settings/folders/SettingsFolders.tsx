@@ -23,6 +23,7 @@ export type OwnProps = {
   state: FoldersState;
   dispatch: FolderEditDispatch;
   isActive?: boolean;
+  isMobile?: boolean;
   onScreenSelect: (screen: SettingsScreens) => void;
   onReset: () => void;
 };
@@ -33,6 +34,7 @@ const SettingsFolders: FC<OwnProps> = ({
   state,
   dispatch,
   isActive,
+  isMobile,
   onScreenSelect,
   onReset,
 }) => {
@@ -76,7 +78,7 @@ const SettingsFolders: FC<OwnProps> = ({
 
   const saveState = useCallback((newState: FoldersState) => {
     const { title } = newState.folder;
-
+    // todo create/edit folder
     if (!title) {
       dispatch({ type: 'setError', payload: ERROR_NO_TITLE });
       return false;
@@ -92,9 +94,12 @@ const SettingsFolders: FC<OwnProps> = ({
       return false;
     }
 
+    console.log({isCreating, folder: newState.folder});
     if (!isCreating) {
       editChatFolder({ id: newState.folderId!, folderUpdate: newState.folder });
     } else {
+      newState.folder.emoticon = '❤';
+      console.log(newState.folder, 'addChatFolderWithEmoticon');
       addChatFolder({ folder: newState.folder as ApiChatFolder });
     }
 
@@ -180,6 +185,7 @@ const SettingsFolders: FC<OwnProps> = ({
           onShareFolder={handleShareFolder}
           onOpenInvite={handleOpenInvite}
           onReset={handleReset}
+          isMobile={isMobile}
           isActive={isActive || [
             SettingsScreens.FoldersIncludedChats,
             SettingsScreens.FoldersExcludedChats,

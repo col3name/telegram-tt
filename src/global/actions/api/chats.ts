@@ -976,6 +976,7 @@ addActionHandler('toggleSavedDialogPinned', (global, actions, payload): ActionRe
 addActionHandler('loadChatFolders', async (global): Promise<void> => {
   const chatFolders = await callApi('fetchChatFolders');
 
+  console.log('ChatFolders', {chatFolders});
   if (chatFolders) {
     global = getGlobal();
 
@@ -1052,6 +1053,7 @@ addActionHandler('editChatFolder', (global, actions, payload): ActionReturnType 
   const { id, folderUpdate } = payload;
   const folder = selectChatFolder(global, id);
 
+  console.log('action editChatFolder', {folder, folderUpdate});
   if (folder) {
     void callApi('editChatFolder', {
       id,
@@ -1070,6 +1072,7 @@ addActionHandler('addChatFolder', async (global, actions, payload): Promise<void
   const { orderedIds, byId } = global.chatFolders;
 
   const limit = selectCurrentLimit(global, 'dialogFilters');
+  console.log('addChatFolder',{limit});
   if (Object.keys(byId).length >= limit) {
     actions.openLimitReachedModal({
       limit: 'dialogFilters',

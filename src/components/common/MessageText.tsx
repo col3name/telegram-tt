@@ -63,6 +63,7 @@ function MessageText({
   const textCacheBusterRef = useRef(0);
 
   const formattedText = translatedText || extractMessageText(messageOrStory, inChatList);
+  // todo messageText
   const adaptedFormattedText = isForAnimation && formattedText ? stripCustomEmoji(formattedText) : formattedText;
   const { text, entities } = adaptedFormattedText || {};
 

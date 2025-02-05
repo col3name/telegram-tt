@@ -104,6 +104,7 @@ export function selectCurrentChat<T extends GlobalState>(
 }
 
 export function selectChatMessages<T extends GlobalState>(global: T, chatId: string) {
+  // console.log({global});
   return global.messages.byChatId[chatId]?.byId;
 }
 

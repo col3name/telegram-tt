@@ -1,28 +1,28 @@
-import type { FC } from '../../../lib/teact/teact';
+import type {FC} from '../../../lib/teact/teact';
 import React, {
   memo, useEffect, useMemo, useRef,
 } from '../../../lib/teact/teact';
-import { getActions, getGlobal, withGlobal } from '../../../global';
+import {getActions, getGlobal, withGlobal} from '../../../global';
 
-import type { ApiChatFolder, ApiChatlistExportedInvite, ApiSession } from '../../../api/types';
-import type { GlobalState } from '../../../global/types';
-import type { FolderEditDispatch } from '../../../hooks/reducers/useFoldersReducer';
-import type { LeftColumnContent, SettingsScreens } from '../../../types';
-import type { MenuItemContextAction } from '../../ui/ListItem';
-import type { TabWithProperties } from '../../ui/TabList';
+import type {ApiChatFolder, ApiChatlistExportedInvite, ApiSession} from '../../../api/types';
+import type {GlobalState} from '../../../global/types';
+import type {FolderEditDispatch} from '../../../hooks/reducers/useFoldersReducer';
+import type {LeftColumnContent, SettingsScreens} from '../../../types';
+import type {MenuItemContextAction} from '../../ui/ListItem';
+import type {TabWithProperties} from '../../ui/TabList';
 
-import { ALL_FOLDER_ID } from '../../../config';
-import { selectCanShareFolder, selectTabState } from '../../../global/selectors';
-import { selectCurrentLimit } from '../../../global/selectors/limits';
+import {ALL_FOLDER_ID} from '../../../config';
+import {selectCanShareFolder, selectTabState} from '../../../global/selectors';
+import {selectCurrentLimit} from '../../../global/selectors/limits';
 import buildClassName from '../../../util/buildClassName';
 import captureEscKeyListener from '../../../util/captureEscKeyListener';
-import { captureEvents, SwipeDirection } from '../../../util/captureEvents';
-import { MEMO_EMPTY_ARRAY } from '../../../util/memo';
-import { IS_TOUCH_ENV } from '../../../util/windowEnvironment';
-import { renderTextWithEntities } from '../../common/helpers/renderTextWithEntities';
+import {captureEvents, SwipeDirection} from '../../../util/captureEvents';
+import {MEMO_EMPTY_ARRAY} from '../../../util/memo';
+import {IS_TOUCH_ENV, MouseButton} from '../../../util/windowEnvironment';
+import {renderTextWithEntities} from '../../common/helpers/renderTextWithEntities';
 
 import useDerivedState from '../../../hooks/useDerivedState';
-import { useFolderManagerForUnreadCounters } from '../../../hooks/useFolderManager';
+import {useFolderManagerForUnreadCounters} from '../../../hooks/useFolderManager';
 import useHistoryBack from '../../../hooks/useHistoryBack';
 import useLang from '../../../hooks/useLang';
 import useLastCallback from '../../../hooks/useLastCallback';
@@ -33,13 +33,19 @@ import TabList from '../../ui/TabList';
 import Transition from '../../ui/Transition';
 import ChatList from './ChatList';
 
+import {useFastClick} from '../../../hooks/useFastClick';
+
+import useContextMenuHandlers from '../../../hooks/useContextMenuHandlers';
+import Menu from '../../ui/Menu';
+import MenuSeparator from '../../ui/MenuSeparator';
+import MenuItem from '../../ui/MenuItem';
+
+import './ChatFoldersDesktop.module.scss';
+import renderText from "../../common/helpers/renderText";
+import Icon from "../../common/icons/Icon";
+
 type OwnProps = {
   hideFolder: boolean;
-  hideChats: boolean;
-  isMobile: boolean;
-  onSettingsScreenSelect: (screen: SettingsScreens) => void;
-  foldersDispatch: FolderEditDispatch;
-  onLeftColumnContentChange: (content: LeftColumnContent) => void;
   shouldHideFolderTabs?: boolean;
   isForumPanelOpen?: boolean;
 };
@@ -64,29 +70,135 @@ type StateProps = {
 const SAVED_MESSAGES_HOTKEY = '0';
 const FIRST_FOLDER_INDEX = 0;
 
-const ChatFolders: FC<OwnProps & StateProps> = ({
-  hideFolder,
-  hideChats,
-  isMobile,
-  foldersDispatch,
-  onSettingsScreenSelect,
-  onLeftColumnContentChange,
+type ChatFolderProps = {
+  onClick: (index: number) => void;
+  active: boolean;
+  className?: string;
+  clickArg: number;
+  folder: TabWithProperties;
+  contextActions?: MenuItemContextAction[];
+  contextRootElementSelector?: string;
+
+};
+
+const classNames = {
+  active: 'Tab--active',
+  badgeActive: 'Tab__badge--active',
+};
+const ChatFolder: FC<ChatFolderProps> = ({
+  className,
+  folder,
+  active,
+  onClick,
+  clickArg,
+  contextActions,
+  contextRootElementSelector,
+}) => {
+  // eslint-disable-next-line no-null/no-null
+  const tabRef = useRef<HTMLDivElement>(null);
+
+  const {
+    contextMenuAnchor, handleContextMenu, handleBeforeContextMenu, handleContextMenuClose,
+    handleContextMenuHide, isContextMenuOpen,
+  } = useContextMenuHandlers(tabRef, !contextActions);
+
+  const { handleClick, handleMouseDown } = useFastClick((e: React.MouseEvent<HTMLDivElement>) => {
+    if (contextActions && (e.button === MouseButton.Secondary || !onClick)) {
+      // handleBeforeContextMenu(e);
+    }
+
+    if (e.type === 'mousedown' && e.button !== MouseButton.Main) {
+      return;
+    }
+
+    onClick?.(clickArg!);
+  });
+
+  const getLayout = useLastCallback(() => ({ withPortal: true }));
+
+  const getTriggerElement = useLastCallback(() => tabRef.current);
+  const getRootElement = useLastCallback(
+    () => (contextRootElementSelector ? tabRef.current!.closest(contextRootElementSelector) : document.body),
+  );
+  const getMenuElement = useLastCallback(
+    () => document.querySelector('#portals')!.querySelector('.Tab-context-menu .bubble'),
+  );
+
+  // console.log(folder)
+  return (
+    <div
+      ref={tabRef}
+      onClick={handleClick}
+      onMouseDown={handleMouseDown}
+      onContextMenu={handleContextMenu}
+      className={buildClassName('Tab', onClick && 'Tab--interactive', className)}
+      // className={buildClassName('FolderTab', active && 'Tab--active', 'Tab--folder', className)}
+    >
+      <span>{folder.emoticon}</span>
+      <span className="Tab_inner">
+        {typeof folder.title === 'string' ? renderText(folder.title) : folder.title}
+        {Boolean(folder.badgeCount) && (
+          <span className={buildClassName('badge', active && classNames.badgeActive)}>{folder.badgeCount}</span>
+        )}
+        {/*{isBlocked && <Icon name="lock-badge" className="blocked"/>}*/}
+      </span>
+
+      {/*<span className="FolderTabEmoticon">{folder.emoticon }</span>*/}
+      {/*<span className="FolderTabTitle">{folder.title}</span>*/}
+      {/*<span className="FolderTab_inner">{folder.badgeCount }</span>*/}
+      {contextActions && contextMenuAnchor !== undefined && (
+        <Menu
+          isOpen={isContextMenuOpen}
+          anchor={contextMenuAnchor}
+          getTriggerElement={getTriggerElement}
+          getRootElement={getRootElement}
+          getMenuElement={getMenuElement}
+          getLayout={getLayout}
+          className="Tab-context-menu"
+          autoClose
+          onClose={handleContextMenuClose}
+          onCloseAnimationEnd={handleContextMenuHide}
+          withPortal
+        >
+          {contextActions.map((action) => (
+            ('isSeparator' in action) ? (
+              <MenuSeparator key={action.key || 'separator'}/>
+            ) : (
+              <MenuItem
+                key={action.title}
+                icon={action.icon}
+                destructive={action.destructive}
+                disabled={!action.handler}
+                onClick={action.handler}
+              >
+                {action.title}
+              </MenuItem>
+            )
+          ))}
+        </Menu>
+      )}
+    </div>
+  );
+};
+
+const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
+  // hideFolder,
   chatFoldersById,
   orderedFolderIds,
   activeChatFolder,
   currentUserId,
   isForumPanelOpen,
-  shouldSkipHistoryAnimations,
+  // shouldSkipHistoryAnimations,
   maxFolders,
   maxChatLists,
-  shouldHideFolderTabs,
+  // shouldHideFolderTabs,
   folderInvitesById,
   maxFolderInvites,
-  hasArchivedChats,
-  hasArchivedStories,
-  archiveSettings,
+  // hasArchivedChats,
+  // hasArchivedStories,
+  // archiveSettings,
   isStoryRibbonShown,
-  sessions,
+  // sessions,
 }) => {
   const {
     loadChatFolders,
@@ -98,6 +210,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     openLimitReachedModal,
   } = getActions();
 
+  // console.log({ chatFoldersById });
   // eslint-disable-next-line no-null/no-null
   const transitionRef = useRef<HTMLDivElement>(null);
 
@@ -121,7 +234,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   const allChatsFolder: ApiChatFolder = useMemo(() => {
     return {
       id: ALL_FOLDER_ID,
-      title: { text: orderedFolderIds?.[0] === ALL_FOLDER_ID ? lang('FilterAllChatsShort') : lang('FilterAllChats') },
+      title: {text: orderedFolderIds?.[0] === ALL_FOLDER_ID ? lang('FilterAllChatsShort') : lang('FilterAllChats')},
       includedChatIds: MEMO_EMPTY_ARRAY,
       excludedChatIds: MEMO_EMPTY_ARRAY,
     } satisfies ApiChatFolder;
@@ -139,8 +252,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
       : undefined;
   }, [chatFoldersById, allChatsFolder, orderedFolderIds]);
 
-  const allChatsFolderIndex = displayedFolders?.findIndex((folder) => folder.id === ALL_FOLDER_ID);
-  const isInAllChatsFolder = allChatsFolderIndex === activeChatFolder;
+  console.log({chatFoldersById, allChatsFolder})
   const isInFirstFolder = FIRST_FOLDER_INDEX === activeChatFolder;
 
   const folderCountersById = useFolderManagerForUnreadCounters();
@@ -202,8 +314,10 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
         });
       }
 
+      console.log({title});
       return {
         id,
+        emoticon: folder.emoticon,
         title: renderTextWithEntities({
           text: title.text,
           entities: title.entities,
@@ -307,60 +421,42 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     withShouldRender: true,
   });
 
-  function renderCurrentTab(isActive: boolean) {
-    const activeFolder = Object.values(chatFoldersById)
-      .find(({ id }) => id === folderTabs![activeChatFolder].id);
-    const isFolder = activeFolder && !isInAllChatsFolder;
+  const shouldRenderFolders = folderTabs && folderTabs.length > 1;
 
-    return (
-      <ChatList
-        folderType={isFolder ? 'folder' : 'all'}
-        folderId={isFolder ? activeFolder.id : undefined}
-        isActive={isActive}
-        isForumPanelOpen={isForumPanelOpen}
-        foldersDispatch={foldersDispatch}
-        onSettingsScreenSelect={onSettingsScreenSelect}
-        onLeftColumnContentChange={onLeftColumnContentChange}
-        canDisplayArchive={(hasArchivedChats || hasArchivedStories) && !archiveSettings.isHidden}
-        archiveSettings={archiveSettings}
-        sessions={sessions}
-      />
-    );
-  }
-
-  const shouldRenderFolders = isMobile && folderTabs && folderTabs.length > 1;
-
-  console.log({isMobile});
   return (
     <div
       ref={ref}
       className={buildClassName(
         'ChatFolders',
-        shouldRenderFolders && shouldHideFolderTabs && 'ChatFolders--tabs-hidden',
-        shouldRenderStoryRibbon && 'with-story-ribbon',
+        // shouldRenderFolders && shouldHideFolderTabs && 'ChatFolders--tabs-hidden',
       )}
     >
-      {shouldRenderStoryRibbon && <StoryRibbon isClosing={isStoryRibbonClosing} />}
       {shouldRenderFolders ? (
-        <TabList
-          contextRootElementSelector="#LeftColumn"
-          tabs={folderTabs}
-          activeTab={activeChatFolder}
-          onSwitchTab={handleSwitchTab}
-        />
+        <div className={buildClassName(
+          'ChatFoldersWrapper',
+          // shouldRenderFolders && shouldHideFolderTabs && 'ChatFolders--tabs-hidden',
+        )}>
+          {folderTabs?.map((tab: TabWithProperties, i: number) => (
+            <ChatFolder
+              key={tab.id}
+              active={activeChatFolder === tab.id}
+              folder={tab}
+              onClick={handleSwitchTab}
+              clickArg={i}
+              contextActions={tab.contextActions}
+              contextRootElementSelector="#LeftMyColumn"
+            />
+          ))}
+        </div>
+        // <TabList
+        //   contextRootElementSelector="#LeftColumn"
+        //   tabs={folderTabs}
+        //   activeTab={activeChatFolder}
+        //   onSwitchTab={handleSwitchTab}
+        // />
       ) : shouldRenderPlaceholder ? (
         <div ref={placeholderRef} className="tabs-placeholder" />
       ) : undefined}
-      {!hideChats && (
-        <Transition
-          ref={transitionRef}
-          name={shouldSkipHistoryAnimations ? 'none' : lang.isRtl ? 'slideOptimizedRtl' : 'slideOptimized'}
-          activeKey={activeChatFolder}
-          renderCount={shouldRenderFolders ? folderTabs.length : undefined}
-        >
-          {renderCurrentTab}
-        </Transition>
-      )}
     </div>
   );
 };
@@ -392,6 +488,7 @@ export default memo(withGlobal<OwnProps>(
     const { shouldSkipHistoryAnimations, activeChatFolder } = selectTabState(global);
     const { storyViewer: { isRibbonShown: isStoryRibbonShown } } = selectTabState(global);
 
+    console.log({chatFoldersById, orderedFolderIds})
     return {
       ...ownProps,
       chatFoldersById,
@@ -399,7 +496,7 @@ export default memo(withGlobal<OwnProps>(
       orderedFolderIds,
       activeChatFolder,
       currentUserId,
-      shouldSkipHistoryAnimations,
+      // shouldSkipHistoryAnimations,
       hasArchivedChats: Boolean(archived?.length),
       hasArchivedStories: Boolean(archivedStories?.length),
       maxFolders: selectCurrentLimit(global, 'dialogFilters'),
@@ -410,4 +507,4 @@ export default memo(withGlobal<OwnProps>(
       sessions,
     };
   },
-)(ChatFolders));
+)(ChatFoldersDesktop));

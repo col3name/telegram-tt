@@ -1,6 +1,9 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, {
-  memo, useEffect, useRef, useState,
+  memo,
+  useEffect,
+  useRef,
+  useState,
 } from '../../../lib/teact/teact';
 
 import type { IAnchorPosition } from '../../../types';
@@ -40,6 +43,7 @@ interface ISelectedTextFormats {
   strikethrough?: boolean;
   monospace?: boolean;
   spoiler?: boolean;
+  quote?: boolean;
 }
 
 const TEXT_FORMAT_BY_TAG_NAME: Record<string, keyof ISelectedTextFormats> = {
@@ -51,6 +55,7 @@ const TEXT_FORMAT_BY_TAG_NAME: Record<string, keyof ISelectedTextFormats> = {
   DEL: 'strikethrough',
   CODE: 'monospace',
   SPAN: 'spoiler',
+  BLOCKQUOTE: 'quote',
 };
 const fragmentEl = document.createElement('div');
 
@@ -190,12 +195,16 @@ const TextFormatter: FC<OwnProps> = ({
     }
 
     if (key === 'monospace' || key === 'strikethrough') {
-      if (Object.keys(selectedTextFormats).some(
-        (fKey) => fKey !== key && Boolean(selectedTextFormats[fKey as keyof ISelectedTextFormats]),
-      )) {
+      if (
+        Object.keys(selectedTextFormats).some((fKey) => (
+          fKey !== key && Boolean(selectedTextFormats[fKey as keyof ISelectedTextFormats])
+        ))
+      ) {
         return 'disabled';
       }
-    } else if (selectedTextFormats.monospace || selectedTextFormats.strikethrough) {
+    } else if (
+      selectedTextFormats.monospace || selectedTextFormats.strikethrough
+    ) {
       return 'disabled';
     }
 
@@ -206,10 +215,8 @@ const TextFormatter: FC<OwnProps> = ({
     if (selectedTextFormats.spoiler) {
       const element = getSelectedElement();
       if (
-        !selectedRange
-        || !element
-        || element.dataset.entityType !== ApiMessageEntityTypes.Spoiler
-        || !element.textContent
+        !selectedRange || !element
+        || element.dataset.entityType !== ApiMessageEntityTypes.Spoiler || !element.textContent
       ) {
         return;
       }
@@ -225,12 +232,15 @@ const TextFormatter: FC<OwnProps> = ({
 
     const text = getSelectedText();
     document.execCommand(
-      'insertHTML', false, `<span class="spoiler" data-entity-type="${ApiMessageEntityTypes.Spoiler}">${text}</span>`,
+      'insertHTML',
+      false,
+      `<span class="spoiler" data-entity-type="${ApiMessageEntityTypes.Spoiler}">${text}</span>`,
     );
     onClose();
   });
 
   const handleBoldText = useLastCallback(() => {
+    // debugger;
     setSelectedTextFormats((selectedFormats) => {
       // Somehow re-applying 'bold' command to already bold text doesn't work
       document.execCommand(selectedFormats.bold ? 'removeFormat' : 'bold');
@@ -270,9 +280,7 @@ const TextFormatter: FC<OwnProps> = ({
     if (selectedTextFormats.strikethrough) {
       const element = getSelectedElement();
       if (
-        !selectedRange
-        || !element
-        || element.tagName !== 'DEL'
+        !selectedRange || !element || element.tagName !== 'DEL'
         || !element.textContent
       ) {
         return;
@@ -292,15 +300,72 @@ const TextFormatter: FC<OwnProps> = ({
     onClose();
   });
 
+  function isFullLineSelection(): boolean {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return false;
+
+    const range = selection.getRangeAt(0);
+    // const commonAncestor = range.commonAncestorContainer;
+    const startNode = range.startContainer;
+    const endNode = range.endContainer;
+
+    // Ensure selection starts at line start and ends at line end
+    const startOffset = range.startOffset;
+    const endOffset = range.endOffset;
+
+    const startParent = startNode.nodeType === Node.TEXT_NODE
+      ? startNode.parentElement
+      : (startNode as Element);
+    const endParent = endNode.nodeType === Node.TEXT_NODE
+      ? endNode.parentElement
+      : (endNode as Element);
+
+    // Check if start is at beginning of text node
+    const isStartOfLine = startOffset === 0
+      || (startNode.nodeType === Node.TEXT_NODE
+        && startNode.textContent?.slice(0, startOffset).trim() === '');
+
+    // Check if end is at end of text node
+    const isEndOfLine = endOffset === (endNode.textContent?.length || 0)
+      || (endNode.nodeType === Node.TEXT_NODE
+        && endNode.textContent?.slice(endOffset).trim() === '');
+
+    return isStartOfLine && isEndOfLine && startParent === endParent;
+  }
+
+  const handleQuoteText = useLastCallback(() => {
+    console.log('handleQuoteText', { selectedTextFormats });
+    // debugger;
+    if (selectedTextFormats.quote) {
+      const element = getSelectedElement();
+      if (!selectedRange || !element || element.tagName !== 'BLOCKQUOTE' || !element.textContent) {
+        return;
+      }
+
+      element.replaceWith(element.textContent);
+      setSelectedTextFormats((selectedFormats) => ({
+        ...selectedFormats,
+        quote: false,
+      }));
+      updateSelectedRange();
+      return;
+    }
+
+    const text = getSelectedText();
+    const isFullLine = isFullLineSelection();
+    document.execCommand(
+      'insertHTML',
+      false,
+      `${isFullLine ? '' : '<br>'}<blockquote>${text}</blockquote>${isFullLine ? '' : '<br>'}`,
+    );
+
+    onClose();
+  });
+
   const handleMonospaceText = useLastCallback(() => {
     if (selectedTextFormats.monospace) {
       const element = getSelectedElement();
-      if (
-        !selectedRange
-        || !element
-        || element.tagName !== 'CODE'
-        || !element.textContent
-      ) {
+      if (!selectedRange || !element || element.tagName !== 'CODE' || !element.textContent) {
         return;
       }
 
@@ -314,7 +379,7 @@ const TextFormatter: FC<OwnProps> = ({
     }
 
     const text = getSelectedText(true);
-    document.execCommand('insertHTML', false, `<code class="text-entity-code" dir="auto">${text}</code>`);
+    document.execCommand('insertHTML', false, `<code class='text-entity-code' dir='auto'>${text}</code>`);
     onClose();
   });
 
@@ -339,7 +404,7 @@ const TextFormatter: FC<OwnProps> = ({
     document.execCommand(
       'insertHTML',
       false,
-      `<a href=${formattedLinkUrl} class="text-entity-link" dir="auto">${text}</a>`,
+      `<a href=${formattedLinkUrl} class='text-entity-link' dir='auto'>${text}</a>`,
     );
     onClose();
   });
@@ -353,15 +418,12 @@ const TextFormatter: FC<OwnProps> = ({
       m: handleMonospaceText,
       s: handleStrikethroughText,
       p: handleSpoilerText,
+      '.': handleQuoteText,
     };
 
     const handler = HANDLERS_BY_KEY[getKeyFromEvent(e)];
 
-    if (
-      e.altKey
-      || !(e.ctrlKey || e.metaKey)
-      || !handler
-    ) {
+    if (e.altKey || !(e.ctrlKey || e.metaKey) || !handler) {
       return;
     }
 
@@ -459,6 +521,14 @@ const TextFormatter: FC<OwnProps> = ({
         </Button>
         <Button
           color="translucent"
+          ariaLabel="Quote text"
+          className={getFormatButtonClassName('quote')}
+          onClick={handleQuoteText}
+        >
+          <Icon name="quote" />
+        </Button>
+        <Button
+          color="translucent"
           ariaLabel="Monospace text"
           className={getFormatButtonClassName('monospace')}
           onClick={handleMonospaceText}
@@ -466,20 +536,31 @@ const TextFormatter: FC<OwnProps> = ({
           <Icon name="monospace" />
         </Button>
         <div className="TextFormatter-divider" />
-        <Button color="translucent" ariaLabel={lang('TextFormat.AddLinkTitle')} onClick={openLinkControl}>
+        <Button
+          color="translucent"
+          ariaLabel={lang('TextFormat.AddLinkTitle')}
+          onClick={openLinkControl}
+        >
           <Icon name="link" />
         </Button>
       </div>
 
       <div className="TextFormatter-link-control">
         <div className="TextFormatter-buttons">
-          <Button color="translucent" ariaLabel={lang('Cancel')} onClick={closeLinkControl}>
+          <Button
+            color="translucent"
+            ariaLabel={lang('Cancel')}
+            onClick={closeLinkControl}
+          >
             <Icon name="arrow-left" />
           </Button>
           <div className="TextFormatter-divider" />
 
           <div
-            className={buildClassName('TextFormatter-link-url-input-wrapper', inputClassName)}
+            className={buildClassName(
+              'TextFormatter-link-url-input-wrapper',
+              inputClassName,
+            )}
           >
             <input
               ref={linkUrlInputRef}

@@ -18,6 +18,7 @@ import './TabList.scss';
 export type TabWithProperties = {
   id?: number;
   title: TeactNode;
+  emoticon?: string;
   badgeCount?: number;
   isBlocked?: boolean;
   isBadgeActive?: boolean;

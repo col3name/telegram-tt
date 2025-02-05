@@ -9,6 +9,7 @@ textCopyEl.className = 'visually-hidden';
 
 export const copyTextToClipboard = (str: string): void => {
   textCopyEl.value = str;
+  // debugger;
   document.body.appendChild(textCopyEl);
   const selection = document.getSelection();
 
@@ -33,6 +34,7 @@ export const copyHtmlToClipboard = (html: string, text: string): void => {
     return;
   }
 
+  // debugger;
   window.navigator.clipboard.write([
     new ClipboardItem({
       'text/plain': new Blob([text], { type: 'text/plain' }),
