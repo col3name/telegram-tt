@@ -1,7 +1,7 @@
 import type BigInt from 'big-integer';
 import { Api as GramJs } from '../../../lib/gramjs';
 
-import type { ApiEmojiStatus, ApiPeerColor } from '../../types';
+import { ApiEmojiStatus, ApiMessageEntity, ApiMessageEntityCustomEmoji, ApiPeerColor } from '../../types';
 
 import { CHANNEL_ID_LENGTH } from '../../../config';
 
@@ -11,6 +11,13 @@ export function isPeerUser(peer: GramJs.TypePeer | GramJs.TypeInputPeer): peer i
 
 export function isPeerChat(peer: GramJs.TypePeer | GramJs.TypeInputPeer): peer is GramJs.PeerChat {
   return peer.hasOwnProperty('chatId');
+}
+
+export function isCustomEmoji(entity: ApiMessageEntity | undefined): entity is ApiMessageEntityCustomEmoji {
+  if (!entity) {
+    return false;
+  }
+  return entity.hasOwnProperty('documentId');
 }
 
 export function isPeerChannel(peer: GramJs.TypePeer | GramJs.TypeInputPeer): peer is GramJs.PeerChannel {

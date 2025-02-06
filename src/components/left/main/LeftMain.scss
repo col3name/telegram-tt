@@ -4,13 +4,13 @@
 }
 
 #LeftMyColumn {
-  width: 180px;
+  width: 85px;
   height: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
-  //background: var(--color-background);
   background-color: rgb(33, 33, 33);
+  border-right: 1px solid var(--color-borders);
 
   #LeftMainHeader {
     padding: 0.375rem 0.8125rem 0.5rem 0.8125rem;

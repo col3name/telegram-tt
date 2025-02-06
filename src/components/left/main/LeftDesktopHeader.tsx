@@ -98,14 +98,14 @@ const LeftDesktopHeader: FC<OwnProps & StateProps> = ({
         ripple={hasMenu && !isMobile}
         size="smaller"
         color="translucent"
-        className={isOpen ? 'active' : ''}
+        className={buildClassName('LeftMainHeader__button', isOpen ? 'active' : '')}
         // eslint-disable-next-line react/jsx-no-bind
         onClick={hasMenu ? onTrigger : () => onReset()}
         ariaLabel={hasMenu ? oldLang('AccDescrOpenMenu2') : 'Return to chat list'}
       >
         <div className={buildClassName(
           'animated-menu-icon',
-          // !hasMenu && 'state-back',
+          !hasMenu && 'state-back',
           shouldSkipTransition && 'no-animation',
         )}
         />
@@ -124,7 +124,7 @@ const LeftDesktopHeader: FC<OwnProps & StateProps> = ({
   } = useLeftHeaderButtonRtlForumTransition(shouldHideSearch);
 
   return (
-    <div className="LeftMainHeader">
+    <div id="LeftMainHeader" className={buildClassName('DropdownMenuContainer')}>
       {oldLang.isRtl && <div className="DropdownMenuFiller" />}
       <DropdownMenu
         trigger={MainButton}

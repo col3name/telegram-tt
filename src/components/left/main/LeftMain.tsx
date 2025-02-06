@@ -174,6 +174,7 @@ const LeftMain: FC<OwnProps> = ({
       onMouseLeave={!IS_TOUCH_ENV ? handleMouseLeave : undefined}
     >
       <LeftMainHeader
+        isMobileOuter={isMobile}
         shouldHideSearch={isForumPanelVisible}
         content={content}
         contactsFilter={contactsFilter}
@@ -199,9 +200,6 @@ const LeftMain: FC<OwnProps> = ({
             case LeftColumnContent.ChatList:
               return (
                 <ChatFolders
-                  // hideFolder={isMobile === undefined ? false : isMobile}
-                  // hideChats={false}
-                  isMobile={isMobile}
                   shouldHideFolderTabs={isForumPanelVisible}
                   onSettingsScreenSelect={onSettingsScreenSelect}
                   onLeftColumnContentChange={onContentChange}

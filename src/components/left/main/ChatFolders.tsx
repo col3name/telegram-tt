@@ -27,6 +27,7 @@ import useHistoryBack from '../../../hooks/useHistoryBack';
 import useLang from '../../../hooks/useLang';
 import useLastCallback from '../../../hooks/useLastCallback';
 import useShowTransition from '../../../hooks/useShowTransition';
+import useAppLayout from '../../../hooks/useAppLayout';
 
 import StoryRibbon from '../../story/StoryRibbon';
 import TabList from '../../ui/TabList';
@@ -34,9 +35,6 @@ import Transition from '../../ui/Transition';
 import ChatList from './ChatList';
 
 type OwnProps = {
-  hideFolder: boolean;
-  hideChats: boolean;
-  isMobile: boolean;
   onSettingsScreenSelect: (screen: SettingsScreens) => void;
   foldersDispatch: FolderEditDispatch;
   onLeftColumnContentChange: (content: LeftColumnContent) => void;
@@ -65,9 +63,6 @@ const SAVED_MESSAGES_HOTKEY = '0';
 const FIRST_FOLDER_INDEX = 0;
 
 const ChatFolders: FC<OwnProps & StateProps> = ({
-  hideFolder,
-  hideChats,
-  isMobile,
   foldersDispatch,
   onSettingsScreenSelect,
   onLeftColumnContentChange,
@@ -328,9 +323,10 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     );
   }
 
-  const shouldRenderFolders = isMobile && folderTabs && folderTabs.length > 1;
+  const { isTablet, isMobile } = useAppLayout();
 
-  console.log({isMobile});
+  const shouldRenderFolders = (isMobile || isTablet) && folderTabs && folderTabs.length > 1;
+
   return (
     <div
       ref={ref}
@@ -351,16 +347,14 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
       ) : shouldRenderPlaceholder ? (
         <div ref={placeholderRef} className="tabs-placeholder" />
       ) : undefined}
-      {!hideChats && (
-        <Transition
-          ref={transitionRef}
-          name={shouldSkipHistoryAnimations ? 'none' : lang.isRtl ? 'slideOptimizedRtl' : 'slideOptimized'}
-          activeKey={activeChatFolder}
-          renderCount={shouldRenderFolders ? folderTabs.length : undefined}
-        >
-          {renderCurrentTab}
-        </Transition>
-      )}
+      <Transition
+        ref={transitionRef}
+        name={shouldSkipHistoryAnimations ? 'none' : lang.isRtl ? 'slideOptimizedRtl' : 'slideOptimized'}
+        activeKey={activeChatFolder}
+        renderCount={shouldRenderFolders ? folderTabs.length : undefined}
+      >
+        {renderCurrentTab}
+      </Transition>
     </div>
   );
 };

@@ -50,6 +50,7 @@ import StatusButton from './StatusButton';
 import './LeftMainHeader.scss';
 
 type OwnProps = {
+  isMobileOuter?: boolean;
   shouldHideSearch?: boolean;
   content: LeftColumnContent;
   contactsFilter: string;
@@ -82,6 +83,7 @@ const CLEAR_DATE_SEARCH_PARAM = { date: undefined };
 const CLEAR_CHAT_SEARCH_PARAM = { id: undefined };
 
 const LeftMainHeader: FC<OwnProps & StateProps> = ({
+  isMobileOuter,
   shouldHideSearch,
   content,
   contactsFilter,
@@ -252,29 +254,31 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   return (
     <div className="LeftMainHeader">
       <div id="LeftMainHeader" className="left-header" ref={headerRef}>
-        {/*{oldLang.isRtl && <div className="DropdownMenuFiller" />}*/}
-        {/*<DropdownMenu*/}
-        {/*  trigger={MainButton}*/}
-        {/*  footer={`${APP_NAME} ${versionString}`}*/}
-        {/*  className={buildClassName(*/}
-        {/*    'main-menu',*/}
-        {/*    oldLang.isRtl && 'rtl',*/}
-        {/*    shouldHideSearch && oldLang.isRtl && 'right-aligned',*/}
-        {/*    shouldDisableDropdownMenuTransitionRef.current && oldLang.isRtl && 'disable-transition',*/}
-        {/*  )}*/}
-        {/*  forceOpen={isBotMenuOpen}*/}
-        {/*  positionX={shouldHideSearch && oldLang.isRtl ? 'right' : 'left'}*/}
-        {/*  transformOriginX={IS_ELECTRON && IS_MAC_OS && !isFullscreen ? 90 : undefined}*/}
-        {/*  onTransitionEnd={oldLang.isRtl ? handleDropdownMenuTransitionEnd : undefined}*/}
-        {/*>*/}
-        {/*  <LeftSideMenuItems*/}
-        {/*    onSelectArchived={onSelectArchived}*/}
-        {/*    onSelectContacts={onSelectContacts}*/}
-        {/*    onSelectSettings={onSelectSettings}*/}
-        {/*    onBotMenuOpened={markBotMenuOpen}*/}
-        {/*    onBotMenuClosed={unmarkBotMenuOpen}*/}
-        {/*  />*/}
-        {/*</DropdownMenu>*/}
+        <>
+          {oldLang.isRtl && <div className="DropdownMenuFiller" />}
+          <DropdownMenu
+            trigger={MainButton}
+            footer={`${APP_NAME} ${versionString}`}
+            className={buildClassName(
+              'main-menu',
+              oldLang.isRtl && 'rtl',
+              shouldHideSearch && oldLang.isRtl && 'right-aligned',
+              shouldDisableDropdownMenuTransitionRef.current && oldLang.isRtl && 'disable-transition',
+            )}
+            forceOpen={isBotMenuOpen}
+            positionX={shouldHideSearch && oldLang.isRtl ? 'right' : 'left'}
+            transformOriginX={IS_ELECTRON && IS_MAC_OS && !isFullscreen ? 90 : undefined}
+            onTransitionEnd={oldLang.isRtl ? handleDropdownMenuTransitionEnd : undefined}
+          >
+            <LeftSideMenuItems
+              onSelectArchived={onSelectArchived}
+              onSelectContacts={onSelectContacts}
+              onSelectSettings={onSelectSettings}
+              onBotMenuOpened={markBotMenuOpen}
+              onBotMenuClosed={unmarkBotMenuOpen}
+            />
+          </DropdownMenu>
+        </>
         <SearchInput
           inputId="telegram-search-input"
           resultsItemSelector=".LeftSearch .ListItem-button"

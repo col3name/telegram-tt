@@ -3,6 +3,13 @@
 #LeftMainHeader {
   position: relative;
 
+  .LeftMainHeader__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(1.2);
+  }
+
   .DropdownMenuFiller {
     width: 2.5rem;
     height: 2.5rem;

@@ -1,47 +1,47 @@
-import type {FC} from '../../../lib/teact/teact';
+import type { FC } from '../../../lib/teact/teact';
 import React, {
   memo, useEffect, useMemo, useRef,
 } from '../../../lib/teact/teact';
-import {getActions, getGlobal, withGlobal} from '../../../global';
+import { getActions, getGlobal, withGlobal } from '../../../global';
 
-import type {ApiChatFolder, ApiChatlistExportedInvite, ApiSession} from '../../../api/types';
-import type {GlobalState} from '../../../global/types';
-import type {FolderEditDispatch} from '../../../hooks/reducers/useFoldersReducer';
-import type {LeftColumnContent, SettingsScreens} from '../../../types';
-import type {MenuItemContextAction} from '../../ui/ListItem';
-import type {TabWithProperties} from '../../ui/TabList';
+import {
+  ApiChatFolder,
+  ApiChatlistExportedInvite,
+  ApiMessageEntityTypes,
+  ApiSession
+} from '../../../api/types';
+import type { GlobalState } from '../../../global/types';
+import type { MenuItemContextAction } from '../../ui/ListItem';
+import type { TabWithProperties } from '../../ui/TabList';
 
-import {ALL_FOLDER_ID} from '../../../config';
-import {selectCanShareFolder, selectTabState} from '../../../global/selectors';
-import {selectCurrentLimit} from '../../../global/selectors/limits';
+import { ALL_FOLDER_ID } from '../../../config';
+import { selectCanShareFolder, selectTabState } from '../../../global/selectors';
+import { selectCurrentLimit } from '../../../global/selectors/limits';
 import buildClassName from '../../../util/buildClassName';
 import captureEscKeyListener from '../../../util/captureEscKeyListener';
-import {captureEvents, SwipeDirection} from '../../../util/captureEvents';
-import {MEMO_EMPTY_ARRAY} from '../../../util/memo';
-import {IS_TOUCH_ENV, MouseButton} from '../../../util/windowEnvironment';
-import {renderTextWithEntities} from '../../common/helpers/renderTextWithEntities';
+import { captureEvents, SwipeDirection } from '../../../util/captureEvents';
+import { MEMO_EMPTY_ARRAY } from '../../../util/memo';
+import { IS_TOUCH_ENV, MouseButton } from '../../../util/windowEnvironment';
+import { renderTextWithEntities } from '../../common/helpers/renderTextWithEntities';
+import renderText from '../../common/helpers/renderText';
+import buildStyle from '../../../util/buildStyle';
 
 import useDerivedState from '../../../hooks/useDerivedState';
-import {useFolderManagerForUnreadCounters} from '../../../hooks/useFolderManager';
+import { useFolderManagerForUnreadCounters } from '../../../hooks/useFolderManager';
 import useHistoryBack from '../../../hooks/useHistoryBack';
 import useLang from '../../../hooks/useLang';
 import useLastCallback from '../../../hooks/useLastCallback';
 import useShowTransition from '../../../hooks/useShowTransition';
-
-import StoryRibbon from '../../story/StoryRibbon';
-import TabList from '../../ui/TabList';
-import Transition from '../../ui/Transition';
-import ChatList from './ChatList';
-
-import {useFastClick} from '../../../hooks/useFastClick';
-
+import { useFastClick } from '../../../hooks/useFastClick';
 import useContextMenuHandlers from '../../../hooks/useContextMenuHandlers';
+import { isCustomEmoji } from '../../../api/gramjs/apiBuilders/peers';
+
 import Menu from '../../ui/Menu';
 import MenuSeparator from '../../ui/MenuSeparator';
 import MenuItem from '../../ui/MenuItem';
+import CustomEmoji from '../../common/CustomEmoji';
 
-import './ChatFoldersDesktop.module.scss';
-import renderText from "../../common/helpers/renderText";
+import styles from './ChatFoldersDesktop.module.scss';
 import Icon from "../../common/icons/Icon";
 
 type OwnProps = {
@@ -124,6 +124,7 @@ const ChatFolder: FC<ChatFolderProps> = ({
     () => document.querySelector('#portals')!.querySelector('.Tab-context-menu .bubble'),
   );
 
+  const iconSize = 40;
   // console.log(folder)
   return (
     <div
@@ -131,17 +132,29 @@ const ChatFolder: FC<ChatFolderProps> = ({
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onContextMenu={handleContextMenu}
-      className={buildClassName('Tab', onClick && 'Tab--interactive', className)}
+      className={[styles.Tab, onClick && styles.TabInteractive].join(' ')}
+      // className={buildClassName('Tab', onClick && 'Tab--interactive', className)}
       // className={buildClassName('FolderTab', active && 'Tab--active', 'Tab--folder', className)}
     >
-      <span>{folder.emoticon}</span>
-      <span className="Tab_inner">
+      { folder.docId && (
+        <CustomEmoji
+          documentId={folder.docId}
+          size={iconSize}
+          style={buildStyle(
+            iconSize !== undefined && `width: ${iconSize}px; height: ${iconSize}px;`,
+          )}
+        />
+      )}
+      { folder.emoticon && <Icon name={folder.emoticon} size={iconSize} /> }
+
+      {/*<span>{folder.emoticon}</span>*/}
+      <span className={styles.Tab_inner}>
         {typeof folder.title === 'string' ? renderText(folder.title) : folder.title}
-        {Boolean(folder.badgeCount) && (
-          <span className={buildClassName('badge', active && classNames.badgeActive)}>{folder.badgeCount}</span>
-        )}
-        {/*{isBlocked && <Icon name="lock-badge" className="blocked"/>}*/}
+        {/*{isBlocked && <Icon name="lock-badge" className="blocked" />}*/}
       </span>
+      {Boolean(folder.badgeCount) && (
+        <span className={buildClassName(styles.badge, active && styles.badgeActive)}>{folder.badgeCount}</span>
+      )}
 
       {/*<span className="FolderTabEmoticon">{folder.emoticon }</span>*/}
       {/*<span className="FolderTabTitle">{folder.title}</span>*/}
@@ -162,7 +175,7 @@ const ChatFolder: FC<ChatFolderProps> = ({
         >
           {contextActions.map((action) => (
             ('isSeparator' in action) ? (
-              <MenuSeparator key={action.key || 'separator'}/>
+              <MenuSeparator key={action.key || 'separator'} />
             ) : (
               <MenuItem
                 key={action.title}
@@ -314,15 +327,23 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
         });
       }
 
-      console.log({title});
+      let docId: string | undefined;
+      if (title.text.includes('Yandex') || title.text.includes('Telegram')) {
+        const emoji = title.entities?.find((entity) => entity.type === ApiMessageEntityTypes.CustomEmoji);
+        docId = isCustomEmoji(emoji) ? emoji?.documentId : undefined;
+        console.log({ folder, title, id: docId, enitities: title.entities, number: emoji });
+      }
+
       return {
         id,
         emoticon: folder.emoticon,
         title: renderTextWithEntities({
           text: title.text,
-          entities: title.entities,
+          entities: [],
+          // entities: title.entities?.splice(0, (title.entities.length - 2) || 0),
           noCustomEmojiPlayback: folder.noTitleAnimations,
         }),
+        docId,
         badgeCount: folderCountersById[id]?.chatsCount,
         isBadgeActive: Boolean(folderCountersById[id]?.notificationsCount),
         isBlocked,
@@ -427,15 +448,18 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
     <div
       ref={ref}
       className={buildClassName(
-        'ChatFolders',
+        styles.ChatFolders,
         // shouldRenderFolders && shouldHideFolderTabs && 'ChatFolders--tabs-hidden',
       )}
     >
       {shouldRenderFolders ? (
-        <div className={buildClassName(
-          'ChatFoldersWrapper',
-          // shouldRenderFolders && shouldHideFolderTabs && 'ChatFolders--tabs-hidden',
-        )}>
+        <div
+          className={buildClassName(
+            styles.ChatFoldersWrapper,
+            // 'ChatFoldersWrapper',
+            // shouldRenderFolders && shouldHideFolderTabs && 'ChatFoldersWrapper--tabs-hidden',
+          )}
+        >
           {folderTabs?.map((tab: TabWithProperties, i: number) => (
             <ChatFolder
               key={tab.id}
