@@ -976,7 +976,9 @@ addActionHandler('toggleSavedDialogPinned', (global, actions, payload): ActionRe
 addActionHandler('loadChatFolders', async (global): Promise<void> => {
   const chatFolders = await callApi('fetchChatFolders');
 
-  console.log('ChatFolders', {chatFolders});
+  // debugger;
+
+  // console.log('ChatFolders', {chatFolders});
   if (chatFolders) {
     global = getGlobal();
 

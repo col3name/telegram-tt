@@ -8,13 +8,13 @@ import {
   ApiChatFolder,
   ApiChatlistExportedInvite,
   ApiMessageEntityTypes,
-  ApiSession
+  ApiSession,
 } from '../../../api/types';
 import type { GlobalState } from '../../../global/types';
 import type { MenuItemContextAction } from '../../ui/ListItem';
 import type { TabWithProperties } from '../../ui/TabList';
 
-import { ALL_FOLDER_ID } from '../../../config';
+import { ALL_FOLDER_ID, PERSONAL_FOLDER_ID } from '../../../config';
 import { selectCanShareFolder, selectTabState } from '../../../global/selectors';
 import { selectCurrentLimit } from '../../../global/selectors/limits';
 import buildClassName from '../../../util/buildClassName';
@@ -25,6 +25,7 @@ import { IS_TOUCH_ENV, MouseButton } from '../../../util/windowEnvironment';
 import { renderTextWithEntities } from '../../common/helpers/renderTextWithEntities';
 import renderText from '../../common/helpers/renderText';
 import buildStyle from '../../../util/buildStyle';
+import { removeEmoji } from '../../../util/emoji/removeEmoji';
 
 import useDerivedState from '../../../hooks/useDerivedState';
 import { useFolderManagerForUnreadCounters } from '../../../hooks/useFolderManager';
@@ -40,9 +41,9 @@ import Menu from '../../ui/Menu';
 import MenuSeparator from '../../ui/MenuSeparator';
 import MenuItem from '../../ui/MenuItem';
 import CustomEmoji from '../../common/CustomEmoji';
+import Icon from "../../common/icons/Icon";
 
 import styles from './ChatFoldersDesktop.module.scss';
-import Icon from "../../common/icons/Icon";
 
 type OwnProps = {
   hideFolder: boolean;
@@ -78,7 +79,6 @@ type ChatFolderProps = {
   folder: TabWithProperties;
   contextActions?: MenuItemContextAction[];
   contextRootElementSelector?: string;
-
 };
 
 const classNames = {
@@ -126,6 +126,8 @@ const ChatFolder: FC<ChatFolderProps> = ({
 
   const iconSize = 40;
   // console.log(folder)
+  const isAllChat = ALL_FOLDER_ID === folder.id;
+  const isPersonalChat = PERSONAL_FOLDER_ID === folder.id;
   return (
     <div
       ref={tabRef}
@@ -145,11 +147,12 @@ const ChatFolder: FC<ChatFolderProps> = ({
           )}
         />
       )}
-      { folder.emoticon && <Icon name={folder.emoticon} size={iconSize} /> }
+      {!folder.docId && <Icon name={isAllChat ? 'chats' : isPersonalChat ? 'group' : 'folder-badge'} className={buildClassName(styles.ChatFoldersIcon, active && styles.ChatFoldersIconActive)} />}
+      {/*{ folder.emoticon && <Icon name="folder" /> }*/}
 
       {/*<span>{folder.emoticon}</span>*/}
       <span className={styles.Tab_inner}>
-        {typeof folder.title === 'string' ? renderText(folder.title) : folder.title}
+        {typeof folder.title === 'string' ? renderText(folder.title, ['emoji', 'hq_emoji', 'emoji_html']) : folder.title}
         {/*{isBlocked && <Icon name="lock-badge" className="blocked" />}*/}
       </span>
       {Boolean(folder.badgeCount) && (
@@ -274,6 +277,7 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
       return undefined;
     }
 
+
     return displayedFolders.map((folder, i) => {
       const { id, title } = folder;
       const isBlocked = id !== ALL_FOLDER_ID && i > maxFolders - 1;
@@ -327,19 +331,24 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
         });
       }
 
-      let docId: string | undefined;
-      if (title.text.includes('Yandex') || title.text.includes('Telegram')) {
-        const emoji = title.entities?.find((entity) => entity.type === ApiMessageEntityTypes.CustomEmoji);
-        docId = isCustomEmoji(emoji) ? emoji?.documentId : undefined;
-        console.log({ folder, title, id: docId, enitities: title.entities, number: emoji });
+      const emoji = title.entities?.find((entity) => entity.type === ApiMessageEntityTypes.CustomEmoji);
+      const docId = isCustomEmoji(emoji) ? emoji?.documentId : undefined;
+      if (
+        title.text.includes('Yandex')
+        // ||
+        // title.text.includes('Telegram')
+      ) {
+        console.log({ title });
+        // console.log({ folder, title, id: docId, enitities: title.entities, number: emoji });
       }
 
       return {
         id,
         emoticon: folder.emoticon,
         title: renderTextWithEntities({
-          text: title.text,
+          text: removeEmoji(title.text),
           entities: [],
+          emojiSize: 30,
           // entities: title.entities?.splice(0, (title.entities.length - 2) || 0),
           noCustomEmojiPlayback: folder.noTitleAnimations,
         }),
@@ -512,7 +521,7 @@ export default memo(withGlobal<OwnProps>(
     const { shouldSkipHistoryAnimations, activeChatFolder } = selectTabState(global);
     const { storyViewer: { isRibbonShown: isStoryRibbonShown } } = selectTabState(global);
 
-    console.log({chatFoldersById, orderedFolderIds})
+    // console.log({chatFoldersById, orderedFolderIds})
     return {
       ...ownProps,
       chatFoldersById,

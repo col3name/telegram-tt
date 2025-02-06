@@ -55,13 +55,14 @@
   justify-content: end;
   align-items: center;
   flex: 1 1 auto;
+  gap: 5px;
   height: 75px;
   appearance: none;
   background: none;
   width: auto;
   margin: 0;
   border: none;
-  padding: 0.625rem 1.125rem;
+  //padding: 0.625rem 1.125rem;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   border-top-left-radius: var(--border-radius-messages-small);
@@ -108,23 +109,30 @@
     font-size: 0.85rem;
   }
 
+  .ChatFoldersIcon {
+    font-size: 36px;
+
+    &Active {
+      color: var(--color-primary);
+    }
+  }
+
   .badge {
-    min-width: 1.45rem;
     position: absolute;
+    top: 7px;
+    right: 10px;
+    min-width: 1.45rem;
     width: fit-content;
-    top: -100px;
-    left: 50%;
-    transform: translate3d(10px, 10px, 10px);
-    height: 1.45rem;
+    height: 1.35rem;
     background: var(--color-primary);
     border-radius: 0.75rem;
-    padding: 0 0.3125rem;
+    padding: 0 0.2125rem;
     color: white;
-    font-size: 0.975rem;
-    line-height: 1.3125rem;
+    font-size: 0.775rem;
+    line-height: 1.35rem;
     font-weight: var(--font-weight-medium);
     text-align: center;
-    flex-shrink: 0;
+    z-index: 1;
 
     body.is-ios &,
     body.is-macos & {
