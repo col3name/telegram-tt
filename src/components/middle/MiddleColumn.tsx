@@ -427,6 +427,7 @@ function MiddleColumn({
   const bgClassName = buildClassName(
     styles.background,
     styles.withTransition,
+    pattern && styles.customBgPattern,
     !pattern && customBackground && styles.customBgImage,
     !pattern && backgroundColor && styles.customBgColor,
     customBackground && isBackgroundBlurred && styles.blurred,
@@ -506,7 +507,7 @@ function MiddleColumn({
       )}
       <div
         className={bgClassName}
-        // style={customBackgroundValue ? `--custom-background: ${customBackgroundValue}` : undefined}
+        style={!pattern && customBackgroundValue ? `--custom-background: ${customBackgroundValue}` : undefined}
       >
         <AnimatedBackground theme={theme} />
       </div>

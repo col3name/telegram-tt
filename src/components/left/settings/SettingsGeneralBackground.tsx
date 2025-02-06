@@ -14,6 +14,7 @@ import { getAverageColor, getPatternColor, rgb2hex } from '../../../util/colors'
 import { validateFiles } from '../../../util/files';
 import { throttle } from '../../../util/schedulers';
 import { openSystemFilesDialog } from '../../../util/systemFilesDialog';
+import buildClassName from '../../../util/buildClassName';
 
 import useHistoryBack from '../../../hooks/useHistoryBack';
 import useOldLang from '../../../hooks/useOldLang';
@@ -153,7 +154,7 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
 
     const colors1 = newPattern in colors ? colors[newPattern] : undefined;
     console.log({ colors1, newPattern });
-    setThemeSettings({ theme: themeRef.current!, pattern: newPattern, colors: colors1 });
+    setThemeSettings({ theme: themeRef.current!, background: newPattern, pattern: newPattern, colors: colors1 });
   }, [setThemeSettings]);
 
   return (
@@ -191,7 +192,14 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
       {loadedWallpapers ? (
         <div className="settings-wallpapers">
           {maskImages.map((value: string) => (
-            <div key={value} style={{backgroundColor: 'gray'}} onClick={() => onSelectPattern(value)}>
+            <div
+              key={value}
+              className={buildClassName(
+                'WallpaperTile',
+                value === pattern && 'selected',
+              )}
+              onClick={() => onSelectPattern(value)}
+            >
               {value}
             </div>
           ))}
