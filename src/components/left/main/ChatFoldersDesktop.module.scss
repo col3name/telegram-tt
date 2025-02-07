@@ -83,7 +83,7 @@
     outline: none;
   }
 
-  &--interactive {
+  &Interactive {
     cursor: var(--custom-cursor, pointer);
 
     @media (hover: hover) {
@@ -99,9 +99,10 @@
     }
   }
 
-  &--active {
+  &Active {
     cursor: var(--custom-cursor, default);
     color: var(--color-primary);
+    background-color: var( --color-skeleton-background);
 
     .platform {
       opacity: 1 !important;

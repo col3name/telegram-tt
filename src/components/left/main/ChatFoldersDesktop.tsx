@@ -134,7 +134,7 @@ const ChatFolder: FC<ChatFolderProps> = ({
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onContextMenu={handleContextMenu}
-      className={[styles.Tab, onClick && styles.TabInteractive].join(' ')}
+      className={[styles.Tab, onClick && styles.TabInteractive, active && styles.TabActive].join(' ')}
       // className={buildClassName('Tab', onClick && 'Tab--interactive', className)}
       // className={buildClassName('FolderTab', active && 'Tab--active', 'Tab--folder', className)}
     >
@@ -155,10 +155,10 @@ const ChatFolder: FC<ChatFolderProps> = ({
         {typeof folder.title === 'string' ? renderText(folder.title, ['emoji', 'hq_emoji', 'emoji_html']) : folder.title}
         {/*{isBlocked && <Icon name="lock-badge" className="blocked" />}*/}
       </span>
+
       {Boolean(folder.badgeCount) && (
         <span className={buildClassName(styles.badge, active && styles.badgeActive)}>{folder.badgeCount}</span>
       )}
-
       {/*<span className="FolderTabEmoticon">{folder.emoticon }</span>*/}
       {/*<span className="FolderTabTitle">{folder.title}</span>*/}
       {/*<span className="FolderTab_inner">{folder.badgeCount }</span>*/}
@@ -472,7 +472,7 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
           {folderTabs?.map((tab: TabWithProperties, i: number) => (
             <ChatFolder
               key={tab.id}
-              active={activeChatFolder === tab.id}
+              active={activeChatFolder === i}
               folder={tab}
               onClick={handleSwitchTab}
               clickArg={i}
