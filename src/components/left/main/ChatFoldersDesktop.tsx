@@ -41,7 +41,7 @@ import Menu from '../../ui/Menu';
 import MenuSeparator from '../../ui/MenuSeparator';
 import MenuItem from '../../ui/MenuItem';
 import CustomEmoji from '../../common/CustomEmoji';
-import Icon from "../../common/icons/Icon";
+import Icon from '../../common/icons/Icon';
 
 import styles from './ChatFoldersDesktop.module.scss';
 
