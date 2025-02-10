@@ -581,6 +581,8 @@ function LeftColumn({
           />
           {/*{ !isMobile && (*/}
           <ChatFoldersDesktop
+            content={content}
+            onReset={handleReset}
             // shouldHideFolderTabs={isForumPanelVisible}
             // foldersDispatch={foldersDispatch}
             // isForumPanelOpen={isForumPanelVisible}

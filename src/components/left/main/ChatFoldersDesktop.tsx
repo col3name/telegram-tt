@@ -1,4 +1,4 @@
-import type { FC } from '../../../lib/teact/teact';
+import { FC, useCallback } from '../../../lib/teact/teact';
 import React, {
   memo, useEffect, useMemo, useRef,
 } from '../../../lib/teact/teact';
@@ -36,6 +36,7 @@ import useShowTransition from '../../../hooks/useShowTransition';
 import { useFastClick } from '../../../hooks/useFastClick';
 import useContextMenuHandlers from '../../../hooks/useContextMenuHandlers';
 import { isCustomEmoji } from '../../../api/gramjs/apiBuilders/peers';
+import { LeftColumnContent } from '../../../types';
 
 import Menu from '../../ui/Menu';
 import MenuSeparator from '../../ui/MenuSeparator';
@@ -46,9 +47,11 @@ import Icon from '../../common/icons/Icon';
 import styles from './ChatFoldersDesktop.module.scss';
 
 type OwnProps = {
+  content: LeftColumnContent;
   hideFolder: boolean;
   shouldHideFolderTabs?: boolean;
   isForumPanelOpen?: boolean;
+  onReset: (event?: true | Event) => void;
 };
 
 type StateProps = {
@@ -215,6 +218,8 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
   // archiveSettings,
   isStoryRibbonShown,
   // sessions,
+  content,
+  onReset,
 }) => {
   const {
     loadChatFolders,
@@ -453,6 +458,14 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
 
   const shouldRenderFolders = folderTabs && folderTabs.length > 1;
 
+  const hasMenu = content === LeftColumnContent.ChatList;
+  const onClick = useCallback((index: number) => {
+    if (!hasMenu) {
+      onReset(true);
+    }
+    handleSwitchTab(index);
+  }, [hasMenu, onReset, handleSwitchTab]);
+
   return (
     <div
       ref={ref}
@@ -474,7 +487,7 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
               key={tab.id}
               active={activeChatFolder === i}
               folder={tab}
-              onClick={handleSwitchTab}
+              onClick={onClick}
               clickArg={i}
               contextActions={tab.contextActions}
               contextRootElementSelector="#LeftMyColumn"
