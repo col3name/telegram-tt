@@ -26,8 +26,8 @@ import { renderTextWithEntities } from '../../common/helpers/renderTextWithEntit
 import renderText from '../../common/helpers/renderText';
 import buildStyle from '../../../util/buildStyle';
 import { removeEmoji } from '../../../util/emoji/removeEmoji';
+import { FOLDER_ICONS } from '../../../hooks/reducers/useFoldersReducer';
 
-import useDerivedState from '../../../hooks/useDerivedState';
 import { useFolderManagerForUnreadCounters } from '../../../hooks/useFolderManager';
 import useHistoryBack from '../../../hooks/useHistoryBack';
 import useLang from '../../../hooks/useLang';
@@ -88,6 +88,33 @@ const classNames = {
   active: 'Tab--active',
   badgeActive: 'Tab__badge--active',
 };
+
+export const getCustomFolderIconName = (emoticon: string, docId?: string) : string => {
+  if (!emoticon && !docId) {
+    return 'folder-badge';
+  }
+  switch (emoticon) {
+    case FOLDER_ICONS.BOT:
+      return 'bot';
+    case FOLDER_ICONS.CHATS:
+      return 'chats';
+    case FOLDER_ICONS.CHAT:
+      return 'chat';
+    case FOLDER_ICONS.STAR:
+      return 'star-filled';
+    case FOLDER_ICONS.PERSON:
+      return 'user-filled';
+    case FOLDER_ICONS.GROUP:
+      return 'group-filled';
+    case FOLDER_ICONS.FOLDER:
+      return 'folder-badge';
+    case FOLDER_ICONS.CHANNEL:
+      return 'channel-filled';
+    default:
+      return 'folder-badge';
+  }
+};
+
 const ChatFolder: FC<ChatFolderProps> = ({
   className,
   folder,
@@ -129,8 +156,10 @@ const ChatFolder: FC<ChatFolderProps> = ({
 
   const iconSize = 40;
   // console.log(folder)
-  const isAllChat = ALL_FOLDER_ID === folder.id;
-  const isPersonalChat = PERSONAL_FOLDER_ID === folder.id;
+  // const isAllChat = ALL_FOLDER_ID === folder.id;
+  // const isPersonalChat = PERSONAL_FOLDER_ID === folder.id;
+
+  // const customFolderIconName = isAllChat ? 'chats' : isPersonalChat ? folder.emoticon ? getCustomFolderIconName(folder.emoticon) : 'group' : folder.emoticon ? getCustomFolderIconName(folder.emoticon) : 'folder-badge';
   return (
     <div
       ref={tabRef}
@@ -141,6 +170,15 @@ const ChatFolder: FC<ChatFolderProps> = ({
       // className={buildClassName('Tab', onClick && 'Tab--interactive', className)}
       // className={buildClassName('FolderTab', active && 'Tab--active', 'Tab--folder', className)}
     >
+      {/*{folder.emoticon === FOLDER_ICONS.BOT && (*/}
+      {/*  <>*/}
+      {/*    <Icon name="bot" />*/}
+      {/*    /!*<span>itsbot {folder.emoticon}</span>*!/*/}
+      {/*  </>*/}
+      {/*)}*/}
+      {/*{Object.keys(FOLDER_ICONS).includes(folder.emoticon) && (*/}
+      {/*  <span>dfd{folder.emoticon}</span>*/}
+      {/*)}*/}
       { folder.docId && (
         <CustomEmoji
           documentId={folder.docId}
@@ -150,10 +188,23 @@ const ChatFolder: FC<ChatFolderProps> = ({
           )}
         />
       )}
-      {!folder.docId && <Icon name={isAllChat ? 'chats' : isPersonalChat ? 'group' : 'folder-badge'} className={buildClassName(styles.ChatFoldersIcon, active && styles.ChatFoldersIconActive)} />}
-      {/*{ folder.emoticon && <Icon name="folder" /> }*/}
+      {!folder.docId && (
+        <>
+          {folder.isCustomIcon ? (
+            <Icon
+              name={folder.customFolderIconName || 'folder-badge'}
+              className={buildClassName(styles.ChatFoldersIcon, active && styles.ChatFoldersIconActive)}
+            />
+          ) : (
+            <span
+              className={buildClassName(styles.ChatFoldersEmoji, active && styles.ChatFoldersIconActive)}
+            >
+              {folder.emoticon}
+            </span>
+          )}
+        </>
+      )}
 
-      {/*<span>{folder.emoticon}</span>*/}
       <span className={styles.Tab_inner}>
         {typeof folder.title === 'string' ? renderText(folder.title, ['emoji', 'hq_emoji', 'emoji_html']) : folder.title}
         {/*{isBlocked && <Icon name="lock-badge" className="blocked" />}*/}
@@ -162,9 +213,6 @@ const ChatFolder: FC<ChatFolderProps> = ({
       {Boolean(folder.badgeCount) && (
         <span className={buildClassName(styles.badge, active && styles.badgeActive)}>{folder.badgeCount}</span>
       )}
-      {/*<span className="FolderTabEmoticon">{folder.emoticon }</span>*/}
-      {/*<span className="FolderTabTitle">{folder.title}</span>*/}
-      {/*<span className="FolderTab_inner">{folder.badgeCount }</span>*/}
       {contextActions && contextMenuAnchor !== undefined && (
         <Menu
           isOpen={isContextMenuOpen}
@@ -199,6 +247,14 @@ const ChatFolder: FC<ChatFolderProps> = ({
     </div>
   );
 };
+
+export function getTitleIcon(title) {
+  return title?.text?.slice(-2)?.match?.(/\p{RGI_Emoji}/vg);
+}
+
+export function isCustomFolderIcon(emoticon: string): boolean {
+  return Object.values(FOLDER_ICONS).includes(emoticon);
+}
 
 const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
   // hideFolder,
@@ -250,12 +306,12 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
     className: false,
     withShouldRender: true,
   });
-  const isStoryRibbonClosing = useDerivedState(getIsStoryRibbonClosing);
+  // const isStoryRibbonClosing = useDerivedState(getIsStoryRibbonClosing);
 
   const allChatsFolder: ApiChatFolder = useMemo(() => {
     return {
       id: ALL_FOLDER_ID,
-      title: {text: orderedFolderIds?.[0] === ALL_FOLDER_ID ? lang('FilterAllChatsShort') : lang('FilterAllChats')},
+      title: { text: orderedFolderIds?.[0] === ALL_FOLDER_ID ? lang('FilterAllChatsShort') : lang('FilterAllChats') },
       includedChatIds: MEMO_EMPTY_ARRAY,
       excludedChatIds: MEMO_EMPTY_ARRAY,
     } satisfies ApiChatFolder;
@@ -273,7 +329,7 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
       : undefined;
   }, [chatFoldersById, allChatsFolder, orderedFolderIds]);
 
-  console.log({chatFoldersById, allChatsFolder})
+  // console.log({ chatFoldersById, allChatsFolder })
   const isInFirstFolder = FIRST_FOLDER_INDEX === activeChatFolder;
 
   const folderCountersById = useFolderManagerForUnreadCounters();
@@ -281,7 +337,6 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
     if (!displayedFolders || !displayedFolders.length) {
       return undefined;
     }
-
 
     return displayedFolders.map((folder, i) => {
       const { id, title } = folder;
@@ -338,6 +393,19 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
 
       const emoji = title.entities?.find((entity) => entity.type === ApiMessageEntityTypes.CustomEmoji);
       const docId = isCustomEmoji(emoji) ? emoji?.documentId : undefined;
+      const isAllChat = ALL_FOLDER_ID === folder.id;
+      const isPersonalChat = PERSONAL_FOLDER_ID === folder.id;
+
+      const customFolderIconName = isAllChat ? 'chats' : isPersonalChat ? folder.emoticon
+        ? getCustomFolderIconName(folder.emoticon) : 'group' : folder.emoticon
+        ? getCustomFolderIconName(folder.emoticon) : 'folder-badge';
+      const titleIcon = getTitleIcon(title);
+      const isCustomIcon = folder.emoticon ? isCustomFolderIcon(folder.emoticon) :  titleIcon?.[0] !== undefined ? false : true;
+
+      console.log({isCustomIcon, em: folder.emoticon, title: folder.title.text, titleIcon: titleIcon?.[0]})
+      if (isCustomIcon && folder.emoticon) {
+        // debugger;
+      }
       if (
         title.text.includes('Yandex')
         // ||
@@ -349,15 +417,17 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
 
       return {
         id,
-        emoticon: folder.emoticon,
+        emoticon: folder.emoticon || titleIcon?.at?.(0),
         title: renderTextWithEntities({
-          text: removeEmoji(title.text),
+          text: removeEmoji(title.text, folder?.emoticon),
           entities: [],
           emojiSize: 30,
           // entities: title.entities?.splice(0, (title.entities.length - 2) || 0),
           noCustomEmojiPlayback: folder.noTitleAnimations,
         }),
         docId,
+        isCustomIcon,
+        customFolderIconName,
         badgeCount: folderCountersById[id]?.chatsCount,
         isBadgeActive: Boolean(folderCountersById[id]?.notificationsCount),
         isBlocked,

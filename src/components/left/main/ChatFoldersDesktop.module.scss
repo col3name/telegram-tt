@@ -126,7 +126,13 @@
       color: var(--color-primary);
     }
   }
+  .ChatFoldersEmoji {
+    font-size: 36px;
 
+    &Active {
+      color: var(--color-primary);
+    }
+  }
   .badge {
     position: absolute;
     top: 7px;

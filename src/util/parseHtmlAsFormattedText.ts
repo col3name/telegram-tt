@@ -24,11 +24,13 @@ const MAX_TAG_DEEPNESS = 3;
 export default function parseHtmlAsFormattedText(
   html: string, withMarkdownLinks = false, skipMarkdown = false,
 ): ApiFormattedText {
+  // html = '*bold _italic bold ~italic bold strikethrough ||italic bold strikethrough spoiler||~ __underline italic bold___ bold*';
   const fragment = document.createElement('div');
   const innerHTML = skipMarkdown ? html
     : withMarkdownLinks ? parseMarkdown(parseMarkdownLinks(html)) : parseMarkdown(html);
   // const innerHTML = html;
-  console.log({ html, innerHTML });
+  // console.log({ html, innerHTML });
+  // debugger;
   fragment.innerHTML = innerHTML;
   fixImageContent(fragment);
   const text = fragment.innerText.trim().replace(/\u200b+/g, '');

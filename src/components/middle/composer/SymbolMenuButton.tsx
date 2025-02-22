@@ -110,7 +110,7 @@ const SymbolMenuButton: FC<OwnProps> = ({
     const triggerEl = triggerRef.current;
     if (!triggerEl) return;
     const rect = triggerEl.getBoundingClientRect();
-    console.log({triggerEl});
+    // console.log({triggerEl});
     if (rect?.x && rect?.y) {
       const { x, y } = rect;
       setContextMenuAnchor({ x, y });

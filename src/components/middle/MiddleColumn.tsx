@@ -479,7 +479,23 @@ function MiddleColumn({
     || (isPinnedMessageList && canUnpin) || canShowOpenChatButton || renderingCanUnblock,
   );
   const withExtraShift = Boolean(isMessagingDisabled || isSelectModeActive);
-
+  //
+  // return (
+  //   <CustomEmoji
+  //     // key={cacheBuster ? `${cacheBuster}-${entity.offset}` : undefined}
+  //     documentId="5424921351322347779"
+  //     size={100}
+  //     isSelectable
+  //     withSharedAnimation
+  //     // sharedCanvasRef={sharedCanvasRef}
+  //     // sharedCanvasHqRef={sharedCanvasHqRef}
+  //     // observeIntersectionForLoading={observeIntersectionForLoading}
+  //     // observeIntersectionForPlaying={observeIntersectionForPlaying}
+  //     // withTranslucentThumb={withTranslucentThumbs}
+  //     // forceAlways={forcePlayback}
+  //     // noPlay={noCustomEmojiPlayback}
+  //   />
+  // );
   return (
     <div
       id="MiddleColumn"

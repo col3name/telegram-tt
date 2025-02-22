@@ -1037,7 +1037,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     // const html = '**bold** and __italic__ and ://telegram.org [link](https://telegram.org) <b>bold2</b>';
     // const html = '<code>`hello world`<code/><img alt="234124618726" data-document-id="234124618726" >';
     const { text, entities } = parseHtmlAsFormattedText(html);
-    console.log('handleSend', html, { text, entities });
+    // console.log('handleSend', html, { text, entities });
 
     if (currentAttachments.length) {
       sendAttachments({

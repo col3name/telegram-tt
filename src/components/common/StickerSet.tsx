@@ -370,6 +370,7 @@ const StickerSet: FC<OwnProps> = ({
             const reactionId = sticker.isCustomEmoji ? sticker.id : sticker.emoji;
             const isSelected = reactionId ? selectedReactionIds?.includes(reactionId) : undefined;
 
+
             return (
               <StickerButton
                 key={sticker.id}

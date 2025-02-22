@@ -19,6 +19,8 @@ export type TabWithProperties = {
   id?: number;
   title: TeactNode;
   emoticon?: string;
+  isCustomIcon?: boolean;
+  customFolderIconName?: string;
   badgeCount?: number;
   docId?: string;
   isBlocked?: boolean;

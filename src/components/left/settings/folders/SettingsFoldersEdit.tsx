@@ -8,23 +8,26 @@ import {
   ApiChatlistExportedInvite,
   ApiMessageEntityCustomEmoji,
   ApiMessageEntityTypes,
-  ApiSticker
+  ApiSticker,
 } from '../../../../api/types';
-import type {
+import {
   FolderEditDispatch,
   FoldersState,
+  selectChatFilters,
 } from '../../../../hooks/reducers/useFoldersReducer';
 
-import { STICKER_SIZE_FOLDER_SETTINGS } from '../../../../config';
+import { STICKER_SIZE_FOLDER_SETTINGS} from '../../../../config';
 import { isUserId } from '../../../../global/helpers';
 import { selectCanShareFolder } from '../../../../global/selectors';
 import { selectCurrentLimit } from '../../../../global/selectors/limits';
 import { findIntersectionWithSet } from '../../../../util/iteratees';
+import { removeEmoji } from '../../../../util/emoji/removeEmoji';
 import { MEMO_EMPTY_ARRAY } from '../../../../util/memo';
 import { CUSTOM_PEER_EXCLUDED_CHAT_TYPES, CUSTOM_PEER_INCLUDED_CHAT_TYPES } from '../../../../util/objects/customPeer';
 import { LOCAL_TGS_URLS } from '../../../common/helpers/animatedAssets';
+import useFlag from '../../../../hooks/useFlag';
+import { getCustomFolderIconName, getTitleIcon, isCustomFolderIcon } from '../../main/ChatFoldersDesktop';
 
-import { selectChatFilters } from '../../../../hooks/reducers/useFoldersReducer';
 import useHistoryBack from '../../../../hooks/useHistoryBack';
 import useOldLang from '../../../../hooks/useOldLang';
 
@@ -36,8 +39,10 @@ import FloatingActionButton from '../../../ui/FloatingActionButton';
 import InputText from '../../../ui/InputText';
 import ListItem from '../../../ui/ListItem';
 import Spinner from '../../../ui/Spinner';
-import useFlag from '../../../../hooks/useFlag';
-import SymbolMenuButton from '../../../middle/composer/SymbolMenuButton';
+import SymbolMenuButtonNew from '../../../middle/composer/SymbolMenuButtonNew';
+import CustomEmoji from '../../../common/CustomEmoji';
+import { isCustomEmoji } from '../../../../api/gramjs/apiBuilders/peers';
+import buildStyle from '../../../../util/buildStyle';
 
 type OwnProps = {
   state: FoldersState;
@@ -163,15 +168,20 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
 
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const { currentTarget } = event;
-    dispatch({ type: 'setTitle', payload: currentTarget.value.trim() });
+    dispatch({ type: 'setTitle', payload: { title: currentTarget.value.trim() } });
   }, [dispatch]);
 
   const handleChangeEmotion = useCallback((emoticon: string) => {
-    console.log('handleChangeEmotion', emoticon);
-    const title = state.folder.title.text + ' ' + emoticon;
-    dispatch({ type: 'setTitle', payload: title });
+    // console.log('handleChangeEmotion', emoticon);
+    let text = state?.folder?.title?.text || '';
+    const emojiMatch = getTitleIcon(state?.folder?.title);
+    // debugger;
+    if (emojiMatch?.[0]) {
+      text = text.replace(emojiMatch?.[0], ' ');
+    }
+    dispatch({ type: 'setTitle', payload: { title: text, emoticon } });
     closeSymbolMenu();
-  }, [dispatch]);
+  }, [dispatch, state.folder.title.text]);
 
   const onCustomEmojiSelect = useCallback((emoji: ApiSticker) => {
     console.log('onCustomEmojiSelect', emoji);
@@ -180,9 +190,10 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
         type: ApiMessageEntityTypes.CustomEmoji,
         offset: 8,
         length: 5,
-        // documentId: emoji.id,
-        documentId: '5424921351322347779',
+        documentId: emoji.id,
+        // documentId: '5424921351322347779',
       };
+      // debugger;
       dispatch({ type: 'setEmoticon', payload: data });
       closeSymbolMenu();
     }
@@ -313,6 +324,11 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
   }
 
   const noop = () => {};
+  const emoji = state.folder.title.entities?.find((entity) => entity.type === ApiMessageEntityTypes.CustomEmoji);
+  const docId = isCustomEmoji(emoji) ? emoji?.documentId : undefined;
+  console.log('folder', state.folder, emoji, docId);
+
+  const emoticon = state?.folder?.emoticon;
   return (
     <div className="settings-fab-wrapper">
       <div className="settings-content no-border custom-scroll">
@@ -333,12 +349,12 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
           <InputText
             className="mb-0 mr-2"
             label={lang('FilterNameHint')}
-            value={state.folder.title.text}
+            value={removeEmoji(state.folder.title.text, state.folder.emoticon)}
             onChange={handleChange}
             error={state.error && state.error === ERROR_NO_TITLE ? ERROR_NO_TITLE : undefined}
           >
             <div className="settings-folders-emoji-button">
-              <SymbolMenuButton
+              <SymbolMenuButtonNew
                 chatId=""
                 iconName="folder-badge"
                 // threadId={threadId}
@@ -346,6 +362,7 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
                 isReady
                 isSymbolMenuOpen={isSymbolMenuOpen}
                 openSymbolMenu={openSymbolMenu}
+                // closeSymbolMenu={() => {}}
                 closeSymbolMenu={closeSymbolMenu}
                 onCustomEmojiSelect={onCustomEmojiSelect}
                 onRemoveSymbol={noop}
@@ -356,16 +373,28 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
                 idPrefix="attachment"
                 forceDarkTheme={false}
               >
-                {state.folder.emoticon && (
-                  <span>{state.folder.emoticon}</span>
+                {docId && (
+                  <CustomEmoji
+                    documentId={docId}
+                    size={24}
+                    style={buildStyle(
+                      `width: ${24}px; height: ${24}px;`,
+                    )}
+                  />
                 )}
-              </SymbolMenuButton>
+                {!docId &&emoticon && (
+                  <>
+                    {isCustomFolderIcon(emoticon) ? (
+                      <Icon name={getCustomFolderIconName(emoticon)} />
+                    ) : (
+                      <span>{emoticon}</span>
+                    )}
+                  </>
+                )}
+
+              </SymbolMenuButtonNew>
             </div>
           </InputText>
-
-          {/*<button onClick={openSymbolMenu}>open*/}
-          {/*</button>*/}
-
         </div>
 
         {!isOnlyInvites && (
@@ -447,7 +476,6 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
         onClick={handleSubmit}
         ariaLabel={state.mode === 'edit' ? 'Save changes' : 'Create folder'}
       >
-        save folder
         {state.isLoading ? (
           <Spinner color="white" />
         ) : (

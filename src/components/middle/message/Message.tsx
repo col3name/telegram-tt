@@ -938,6 +938,7 @@ const Message: FC<OwnProps & StateProps> = ({
 
   function renderMessageText(isForAnimation?: boolean) {
     if (!textMessage) return undefined;
+    // debugger;
     return (
       <MessageText
         messageOrStory={textMessage}

@@ -741,7 +741,7 @@ export default memo(withGlobal<OwnProps>(
       ? selectChatScheduledMessages(global, chatId)
       : selectChatMessages(global, chatId);
 
-    console.log(chatId, 'messages');
+    // console.log(chatId, 'messages');
     const isSavedDialog = getIsSavedDialog(chatId, threadId, currentUserId);
 
     if (

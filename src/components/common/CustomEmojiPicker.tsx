@@ -1,4 +1,4 @@
-import type { FC } from '../../lib/teact/teact';
+import {FC, useState} from '../../lib/teact/teact';
 import React, {
   memo, useEffect, useMemo, useRef,
 } from '../../lib/teact/teact';
@@ -47,11 +47,13 @@ import Loading from '../ui/Loading';
 import Icon from './icons/Icon';
 import StickerButton from './StickerButton';
 import StickerSet from './StickerSet';
+import SearchInput from '../ui/SearchInput';
 
 import pickerStyles from '../middle/composer/StickerPicker.module.scss';
 import styles from './CustomEmojiPicker.module.scss';
 
 type OwnProps = {
+  isFolder?: boolean;
   chatId?: string;
   className?: string;
   pickerListClassName?: string;
@@ -103,6 +105,17 @@ const STICKER_SET_IDS_WITH_COVER = new Set([
   FAVORITE_SYMBOL_SET_ID,
   POPULAR_SYMBOL_SET_ID,
 ]);
+
+function searchEmoji(obj:Record<string, unknown>, searchValue:string) {
+  const filtered = Object.keys(obj).reduce((acc, key) => {
+    if (key.includes(searchValue)) {
+      // @ts-ignore
+      acc[key] = obj[key];
+    }
+    return acc;
+  }, {});
+  return filtered;
+}
 
 const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
   className,
@@ -281,7 +294,7 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
     addedCustomEmojiIds, isReactionPicker, isStatusPicker, withDefaultTopicIcons, recentCustomEmojis,
     customEmojiFeaturedIds, stickerSetsById, topReactions, availableReactions, lang, recentReactions,
     defaultStatusIconsId, defaultTopicIconsId, isSavedMessages, defaultTagReactions, chatEmojiSetId,
-    isWithPaidReaction,
+    isWithPaidReaction
   ]);
 
   const noPopulatedSets = useMemo(() => (
@@ -416,6 +429,11 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
           {allSets.map(renderCover)}
         </div>
       </div>
+      {/*<SearchInput*/}
+      {/*  className={buildClassName('EmojiPicker-search')}*/}
+      {/*  placeholder="Search Emoji"*/}
+      {/*  onChange={setSearchValue}*/}
+      {/*/>*/}
       <div
         ref={containerRef}
         onScroll={handleContentScroll}
@@ -426,6 +444,7 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
             || (stickerSet.id === RECENT_SYMBOL_SET_ID && (withDefaultTopicIcons || isStatusPicker));
           const isChatEmojiSet = stickerSet.id === chatEmojiSetId;
 
+          // debugger;
           return (
             <StickerSet
               key={stickerSet.id}

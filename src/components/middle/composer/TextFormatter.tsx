@@ -334,7 +334,7 @@ const TextFormatter: FC<OwnProps> = ({
   }
 
   const handleQuoteText = useLastCallback(() => {
-    console.log('handleQuoteText', { selectedTextFormats });
+    // console.log('handleQuoteText', { selectedTextFormats });
     // debugger;
     if (selectedTextFormats.quote) {
       const element = getSelectedElement();

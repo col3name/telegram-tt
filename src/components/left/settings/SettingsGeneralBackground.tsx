@@ -101,11 +101,11 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
   }, [setThemeSettings, theme]);
 
   const handleWallPaperSelect = useCallback((slug: string) => {
-    console.log({slug, loadedWallpapers});
+    // console.log({slug, loadedWallpapers});
     setThemeSettings({ theme: themeRef.current!, background: slug, pattern: undefined });
     const currentWallpaper = loadedWallpapers && loadedWallpapers.find((wallpaper: ApiWallpaper) => wallpaper.slug === slug);
-    console.log({currentWallpaper});
-    debugger;
+    // console.log({currentWallpaper});
+    // debugger;
     if (currentWallpaper?.document.thumbnail) {
       getAverageColor(currentWallpaper.document.thumbnail.dataUri)
         .then((color) => {
@@ -153,7 +153,7 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
     };
 
     const colors1 = newPattern in colors ? colors[newPattern] : undefined;
-    console.log({ colors1, newPattern });
+    // console.log({ colors1, newPattern });
     setThemeSettings({ theme: themeRef.current!, background: newPattern, pattern: newPattern, colors: colors1 });
   }, [setThemeSettings]);
 

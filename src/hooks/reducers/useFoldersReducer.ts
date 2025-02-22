@@ -1,6 +1,6 @@
 import { getGlobal } from '../../global';
 
-import type { ApiChatFolder } from '../../api/types';
+import { ApiChatFolder } from '../../api/types';
 import type { IconName } from '../../types/icons';
 import type { Dispatch, StateReducer } from '../useReducer';
 
@@ -130,6 +130,19 @@ const INITIAL_STATE: FoldersState = {
   },
 };
 
+export const FOLDER_ICONS = {
+  CHATS: '💬',
+  CHAT: '✅',
+  PERSON: '👤',
+  GROUP: '👥',
+  STAR: '⭐',
+  BOT: '🤖',
+  CHANNEL: '📢',
+  FOLDER: '📁',
+} as const;
+
+export const FOLDER_ICONS_LIST= Object.values(FOLDER_ICONS);
+
 const foldersReducer: StateReducer<FoldersState, FoldersActions> = (
   state,
   action,
@@ -149,7 +162,17 @@ const foldersReducer: StateReducer<FoldersState, FoldersActions> = (
         ...state,
         folder: {
           ...state.folder,
-          title: { text: action.payload },
+          title: {
+            text:
+              Object.values(FOLDER_ICONS).includes(action.payload.emoticon)
+                ? state.folder.title.text
+                : `${action.payload.title.text}${action.payload.emoticon}`,
+            ...action.payload.title,
+            entities: action.payload.document ? [
+              action.payload.document,
+            ] : undefined,
+          },
+          emoticon: action.payload.emoticon,
         },
         isTouched: true,
       };

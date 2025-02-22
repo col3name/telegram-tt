@@ -87,6 +87,7 @@ function MessageText({
     return <span className="content-unsupported">{CONTENT_NOT_SUPPORTED}</span>;
   }
 
+  // debugger;
   return (
     <>
       {[

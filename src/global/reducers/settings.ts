@@ -23,7 +23,7 @@ export function replaceSettings<T extends GlobalState>(global: T, newSettings?: 
 export function replaceThemeSettings<T extends GlobalState>(
   global: T, theme: ThemeKey, newSettings?: Partial<IThemeSettings>,
 ): T {
-  console.log({newSettings})
+  // console.log({newSettings})
   return {
     ...global,
     settings: {
