@@ -402,7 +402,7 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
       const titleIcon = getTitleIcon(title);
       const isCustomIcon = folder.emoticon ? isCustomFolderIcon(folder.emoticon) :  titleIcon?.[0] !== undefined ? false : true;
 
-      console.log({isCustomIcon, em: folder.emoticon, title: folder.title.text, titleIcon: titleIcon?.[0]})
+      // console.log({isCustomIcon, em: folder.emoticon, title: folder.title.text, titleIcon: titleIcon?.[0]})
       if (isCustomIcon && folder.emoticon) {
         // debugger;
       }
@@ -411,7 +411,7 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
         // ||
         // title.text.includes('Telegram')
       ) {
-        console.log({ title });
+        // console.log({ title });
         // console.log({ folder, title, id: docId, enitities: title.entities, number: emoji });
       }
 
