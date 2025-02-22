@@ -188,7 +188,7 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
         />
       </div>
 
-      <div>{`Selected ${pattern}`}</div>
+      {/*<div>{`Selected ${pattern}`}</div>*/}
       {loadedWallpapers ? (
         <div className="settings-wallpapers">
           {maskImages.map((value: string) => (

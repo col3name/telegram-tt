@@ -754,6 +754,7 @@ const Composer: FC<OwnProps & StateProps> = ({
       setTimeout(() => closeSymbolMenu(), SENDING_ANIMATION_DURATION);
     } else {
       closeSymbolMenu();
+
     }
   });
 
@@ -1830,7 +1831,6 @@ const Composer: FC<OwnProps & StateProps> = ({
               forceDarkTheme={isInStoryViewer}
             />
           )}
-          symbol
           <MessageInput
             ref={inputRef}
             id={inputId}
