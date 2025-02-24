@@ -1032,7 +1032,7 @@ function copyTextForMessages(global: GlobalState, chatId: string, messageIds: nu
     resultText.push(`${getMessageSummaryText(lang, message, statefulContent, false, 0, true)}\n`);
   });
 
-  // debugger;
+
   console.log('CopyHtmlToClipboard', { resultHtml, messages });
   copyHtmlToClipboard(resultHtml.join('\n'), resultText.join('\n'));
 }

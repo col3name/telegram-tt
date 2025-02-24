@@ -444,7 +444,7 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
             || (stickerSet.id === RECENT_SYMBOL_SET_ID && (withDefaultTopicIcons || isStatusPicker));
           const isChatEmojiSet = stickerSet.id === chatEmojiSetId;
 
-          // debugger;
+
           return (
             <StickerSet
               key={stickerSet.id}

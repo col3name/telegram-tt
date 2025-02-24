@@ -671,7 +671,7 @@ export function convertMarkdownIntoApiFormattedText(html: string): ApiFormattedT
   }
 
   function convertMarkdownIntoApiFormattedText(html) {
-    // debugger;
+
     const value = cleanHtml(html);
     const ast = parseMarkdownAsAst(value);
     const result = astToApiFormatedText(ast);

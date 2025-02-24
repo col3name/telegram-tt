@@ -171,7 +171,7 @@ function updateMask(config, wallpaperContainer: HTMLDivElement, gradientCanvas: 
 
   // let href = window.location.href;
   const href = './';
-  // debugger;
+
   let url = `${href}patterns/${maskImage}.svg`;
   switch (maskImage) {
     case 'animals': {
@@ -307,7 +307,7 @@ const BgWallpaper: FC<OwnProps & StateProps> = ({
     }
 
     // preloadImage(BeachPattern).then(result => {
-    //   // debugger;
+    //
     //   wallpaperContainerRef.current?.appendChild(result);
     //   console.log({result});
     // });

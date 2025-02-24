@@ -36,7 +36,7 @@ export async function fetch(
     const cache = await cacheApi.open(cacheName);
     const response = await cache.match(request);
     if (cacheName === CUSTOM_BG_CACHE_NAME) {
-      // debugger;
+
     }
     if (!response) {
       return undefined;

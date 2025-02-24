@@ -240,7 +240,7 @@ const TextFormatter: FC<OwnProps> = ({
   });
 
   const handleBoldText = useLastCallback(() => {
-    // debugger;
+
     setSelectedTextFormats((selectedFormats) => {
       // Somehow re-applying 'bold' command to already bold text doesn't work
       document.execCommand(selectedFormats.bold ? 'removeFormat' : 'bold');
@@ -335,7 +335,7 @@ const TextFormatter: FC<OwnProps> = ({
 
   const handleQuoteText = useLastCallback(() => {
     // console.log('handleQuoteText', { selectedTextFormats });
-    // debugger;
+
     if (selectedTextFormats.quote) {
       const element = getSelectedElement();
       if (!selectedRange || !element || element.tagName !== 'BLOCKQUOTE' || !element.textContent) {

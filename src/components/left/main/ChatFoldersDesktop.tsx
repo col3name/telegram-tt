@@ -404,7 +404,7 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
 
       // console.log({isCustomIcon, em: folder.emoticon, title: folder.title.text, titleIcon: titleIcon?.[0]})
       if (isCustomIcon && folder.emoticon) {
-        // debugger;
+
       }
       if (
         title.text.includes('Yandex')

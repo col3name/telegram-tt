@@ -439,7 +439,7 @@ function processEntity({
     }
 
     if (entity.type === ApiMessageEntityTypes.CustomEmoji) {
-      // debugger;
+
       return (
         <CustomEmoji
           key={cacheBuster ? `${cacheBuster}-${entity.offset}` : undefined}

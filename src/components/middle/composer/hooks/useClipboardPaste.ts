@@ -61,7 +61,7 @@ const useClipboardPaste = (
       const html = e.clipboardData.getData('text/html');
 
       let pastedHtml = preparePastedHtml(html);
-      // debugger;
+
       let pastedFormattedText = html ? parseHtmlAsFormattedText(
         pastedHtml, undefined, true,
       ) : undefined;

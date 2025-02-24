@@ -175,7 +175,7 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
     // console.log('handleChangeEmotion', emoticon);
     let text = state?.folder?.title?.text || '';
     const emojiMatch = getTitleIcon(state?.folder?.title);
-    // debugger;
+
     if (emojiMatch?.[0]) {
       text = text.replace(emojiMatch?.[0], ' ');
     }
@@ -193,7 +193,7 @@ const SettingsFoldersEdit: FC<OwnProps & StateProps> = ({
         documentId: emoji.id,
         // documentId: '5424921351322347779',
       };
-      // debugger;
+
       dispatch({ type: 'setEmoticon', payload: data });
       closeSymbolMenu();
     }

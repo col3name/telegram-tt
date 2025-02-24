@@ -105,7 +105,7 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
     setThemeSettings({ theme: themeRef.current!, background: slug, pattern: undefined });
     const currentWallpaper = loadedWallpapers && loadedWallpapers.find((wallpaper: ApiWallpaper) => wallpaper.slug === slug);
     // console.log({currentWallpaper});
-    // debugger;
+
     if (currentWallpaper?.document.thumbnail) {
       getAverageColor(currentWallpaper.document.thumbnail.dataUri)
         .then((color) => {

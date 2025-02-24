@@ -191,7 +191,7 @@ export async function fetchAnimatedEmojis() {
     stickerset: new GramJs.InputStickerSetAnimatedEmoji(),
   }));
 
-  // debugger;
+
   if (!(result instanceof GramJs.messages.StickerSet)) {
     return undefined;
   }
