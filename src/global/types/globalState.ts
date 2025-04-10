@@ -11,6 +11,7 @@ import type {
   ApiConfig,
   ApiCountry,
   ApiCountryCode,
+  ApiEmojiGroup,
   ApiGroupCall,
   ApiLanguage,
   ApiMessage,
@@ -335,6 +336,9 @@ export type GlobalState = {
     effect: {
       stickers: ApiSticker[];
       emojis: ApiSticker[];
+      emojiGroups: ApiEmojiGroup[];
+      group: ApiEmojiGroup | undefined;
+      isLoading: boolean;
     };
   };
 
@@ -403,6 +407,7 @@ export type GlobalState = {
     byKey: ISettings;
     performance: PerformanceType;
     loadedWallpapers?: ApiWallpaper[];
+    animatedEmojis?: ApiSticker[];
     themes: Partial<Record<ThemeKey, IThemeSettings>>;
     privacy: Partial<Record<ApiPrivacyKey, ApiPrivacySettings>>;
     notifyExceptions?: Record<number, NotifyException>;

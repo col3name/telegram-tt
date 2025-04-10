@@ -1,15 +1,11 @@
-import React, {type FC, memo, useEffect, useRef,} from '../../lib/teact/teact';
-// import {colors, config} from './twallpaper-webgl/src/config'
-// import fragmentShader from './twallpaper-webgl/src/fragment-shader.glsl?raw'
-// import {hexToVec3} from './twallpaper-webgl/src/hex-to-vec3'
-// import {loadShaders} from './twallpaper-webgl/src/load-shaders'
-// import vertexShader from './twallpaper-webgl/src/vertex-shader.glsl?raw';
+import React, { type FC, memo, useEffect, useRef } from '../../lib/teact/teact';
 
-import './twallpaper-webgl/src/styles.css';
 import { withGlobal } from '../../global';
-import { selectTheme } from '../../global/selectors';
+import { selectCanAnimateInterface, selectTheme } from '../../global/selectors';
 import { ThemeKey } from '../../types';
-import {preloadImage} from '../../util/files';
+import buildClassName from '../../util/buildClassName';
+// import {preloadImage} from '../../util/files';
+
 import AnimalsPattern from '../../assets/patterns/animals.svg';
 import BeachPattern from '../../assets/patterns/beach.svg';
 import AstronautCatsPattern from '../../assets/patterns/astronaut_cats.svg';
@@ -29,6 +25,8 @@ import TattoosPattern from '../../assets/patterns/tattoos.svg';
 import UnderwaterWorldPattern from '../../assets/patterns/underwater_world.svg';
 import ZooPattern from '../../assets/patterns/zoo.svg';
 import UnicornPattern from '../../assets/patterns/unicorn.svg';
+
+import './twallpaper-webgl/src/styles.css';
 
 export const maskImages: string[] = [
   'animals',
@@ -171,7 +169,6 @@ function updateMask(config, wallpaperContainer: HTMLDivElement, gradientCanvas: 
 
   // let href = window.location.href;
   const href = './';
-  // debugger;
   let url = `${href}patterns/${maskImage}.svg`;
   switch (maskImage) {
     case 'animals': {
@@ -255,11 +252,6 @@ function updateMask(config, wallpaperContainer: HTMLDivElement, gradientCanvas: 
       break;
   }
 
-  // preloadImage(url)
-  //   .then(() => {
-  //     console.log(url);
-  //   });
-
   wallpaperContainer.style.setProperty(
     '--tw-image',
     `url(${url})`,
@@ -272,12 +264,16 @@ function updateMask(config, wallpaperContainer: HTMLDivElement, gradientCanvas: 
   }
 }
 
-const BgWallpaper: FC<OwnProps & StateProps> = ({
+export const BgWallpaper: FC<OwnProps & StateProps> = ({
+  setBgSignalValue,
   colors: patternColors,
+  withInterfaceAnimations,
   pattern,
-
+  isDark,
+  isBlurred,
+  isDarkTheme,
+  intensity,
 }) => {
-
   const config = {
     pattern: {
       isEnabled: false,
@@ -286,65 +282,45 @@ const BgWallpaper: FC<OwnProps & StateProps> = ({
       backgroundColor: '#000',
     },
     colors: parsePatternColors(patternColors),
-    // colors: {
-    //   color1: '#fec496',
-    //   color2: '#dd6cb9',
-    //   color3: '#962fbf',
-    //   color4: '#4f5bd5',
-    // },
-    // colors: {
-    //   color1: '#dbddbb',
-    //   color2: '#6ba587',
-    //   color3: '#d5d88d',
-    //   color4: '#88b884',
   };
   const wallpaperContainerRef = useRef<HTMLDivElement>();
   const gradientCanvasRef = useRef<HTMLCanvasElement>();
   const wallpaperMaskRef = useRef<HTMLDivElement>();
+
   useEffect(() => {
     if (!pattern) {
       return;
     }
 
-    // preloadImage(BeachPattern).then(result => {
-    //   // debugger;
-    //   wallpaperContainerRef.current?.appendChild(result);
-    //   console.log({result});
-    // });
     const colors = {
       color1: hexToVec3(config.colors.color1),
       color2: hexToVec3(config.colors.color2),
       color3: hexToVec3(config.colors.color3),
       color4: hexToVec3(config.colors.color4),
     };
-    // const wallpaperContainer = document.querySelector('#wallpaper');
     const gradientCanvas = gradientCanvasRef.current;
     if (!gradientCanvas) {
       return;
-      // gradientCanvas = document.createElement('canvas');
     }
-    // const gradientCanvas = document.createElement('canvas');
     gradientCanvas.classList.add('wallpaper-canvas');
 
     const wallpaperContainer = wallpaperContainerRef.current;
     if (!wallpaperContainer) {
       return;
     }
-    // const maskContainer = document.createElement('div');
-    // maskContainer.classList.add('wallpaper-pattern');
-    // wallpaperContainer.append(gradientCanvas, maskContainer);
-
     updateMask(config, wallpaperContainer, gradientCanvas);
 
     const gl = gradientCanvas.getContext('webgl');
     if (!gl) {
-      throw new Error('WebGL not supported');
+      return;
+      // throw new Error('WebGL not supported');
     }
 
     // setup GLSL program
     const program = gl.createProgram();
     if (!program) {
-      throw new Error('Unable to create WebGLProgram');
+      return;
+      // throw new Error('Unable to create WebGLProgram');
     }
 
     // load shaders
@@ -356,7 +332,8 @@ const BgWallpaper: FC<OwnProps & StateProps> = ({
     gl.linkProgram(program);
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      alert('Unable to initialize the shader program.');
+      // alert('Unable to initialize the shader program.');
+      return;
     }
 
     gl.useProgram(program);
@@ -469,11 +446,7 @@ const BgWallpaper: FC<OwnProps & StateProps> = ({
       gl.uniform2fv(color3PosLoc, color3Pos);
       gl.uniform2fv(color4PosLoc, color4Pos);
 
-      gl.drawArrays(
-        gl.TRIANGLES,
-        0, // offset
-        6, // num vertices to process
-      );
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 
     function distance(p1, p2) {
@@ -486,7 +459,7 @@ const BgWallpaper: FC<OwnProps & StateProps> = ({
     const speed = 0.1;
     let animating = false;
 
-    function animate() {
+    const animate = () => {
       animating = true;
       if (
         distance(color1Pos, targetColor1Pos) > 0.01 || distance(color2Pos, targetColor2Pos) > 0.01
@@ -505,40 +478,28 @@ const BgWallpaper: FC<OwnProps & StateProps> = ({
       } else {
         animating = false;
       }
-    }
-
-    // paneInputMask.on('change', () => {
-    //   updateMask();
-    // });
-    //
-    // paneColors.on('change', (event) => {
-    //   // @ts-ignore
-    //   colors[event.target.key] = hexToVec3(event.value)
-    //   renderGradientCanvas()
-    // })
-    //
-    // maskList.on('change', (event) => {
-    //   config.pattern.maskImage = event.value
-    //   updateMask()
-    // })
-
-    // maskInputSize.on('change', () => {
-    //   updateMask()
-    // })
+    };
 
     const listener = () => {
+      if (!withInterfaceAnimations) {
+        return;
+      }
       updateTargetColors();
       if (!animating) {
         requestAnimationFrame(animate);
       }
     };
-    const interval = setInterval(listener, 2500);
-    document.addEventListener('click', listener);
+    document.addEventListener('onAnimatedChatBackground', listener);
+    if (withInterfaceAnimations) {
+      setBgSignalValue(listener);
+    } else {
+      setBgSignalValue(() => {});
+    }
+    // eslint-disable-next-line consistent-return
     return () => {
-      document.removeEventListener('click', listener);
-      clearInterval(interval);
+      document.removeEventListener('onAnimatedChatBackground', listener);
     };
-  }, [pattern, patternColors]);
+  }, [withInterfaceAnimations, config, pattern, patternColors, setBgSignalValue]);
 
   const prefPattern = useRef(pattern);
 
@@ -546,42 +507,57 @@ const BgWallpaper: FC<OwnProps & StateProps> = ({
     prefPattern.current = pattern;
     updateMask(config, wallpaperContainerRef.current, gradientCanvasRef.current);
   }
-  // if ()
+
+
   if (!pattern) {
-    return null;
+    return undefined;
   }
   return (
     <div id="animatedWallpaper">
-      wallpaper
-      <h1>{pattern}</h1>
-      <div id="wallpaper" ref={wallpaperContainerRef} className="wallpaper-wrapper">
-        <canvas ref={gradientCanvasRef} className="wallpaper-canvas"></canvas>
-        <div ref={wallpaperMaskRef} className="wallpaper-pattern"></div>
+      <div
+        id="wallpaper"
+        ref={wallpaperContainerRef}
+        className={buildClassName(
+          'wallpaper-wrapper',
+          isDarkTheme && 'wallpaper-dark',
+        )}
+      >
+        <canvas ref={gradientCanvasRef} className="wallpaper-canvas" />
+        <div ref={wallpaperMaskRef} className="wallpaper-pattern" />
       </div>
     </div>
   );
 };
 
 export type OwnProps = {
+  isDark?: boolean;
+  isBlurred?: boolean;
+  theme: ThemeKey;
+  setBgSignalValue?: any;
+  withInterfaceAnimations?: boolean;
 };
 
 type StateProps = {
   pattern?: string;
   theme: ThemeKey;
   colors?: string[];
+  isDarkTheme?: boolean;
+  intensity?: number;
 };
 
 const AnimatedBackground = memo(withGlobal<OwnProps>(
   (global): StateProps => {
     const theme = selectTheme(global);
-    let them = global.settings.themes[theme] || {};
-    const { background, isBlurred, pattern, colors } = them;
-    const { loadedWallpapers } = global.settings;
+    const them = global.settings.themes[theme] || {};
+    const { isBlurred, pattern, colors, intensity } = them;
 
-    // console.log( global.settings.themes, loadedWallpapers);
     return {
       pattern,
-      colors,
+      intensity,
+      isBlurred,
+      isDarkTheme: intensity < 0 || theme === 'dark',
+      colors: theme === 'light' ? colors : ['#7fa381', '#fff5c5', '#336f55', '#fbe37d'],
+      withInterfaceAnimations: selectCanAnimateInterface(global),
       // background,
       // isBlurred,
       // loadedWallpapers,

@@ -57,7 +57,7 @@ export type OwnProps = {
   ) => void;
   onGifSelect?: (gif: ApiVideo, isSilent?: boolean, shouldSchedule?: boolean) => void;
   onRemoveSymbol: () => void;
-  onSearchOpen: (type: 'stickers' | 'gifs') => void;
+  onSearchOpen: (type: 'stickers' | 'gifs' | 'customEmoji') => void;
   addRecentEmoji: GlobalActions['addRecentEmoji'];
   addRecentCustomEmoji: GlobalActions['addRecentCustomEmoji'];
   className?: string;
@@ -98,10 +98,13 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
   addRecentCustomEmoji,
   ...menuPositionOptions
 }) => {
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(1);
   const [recentEmojis, setRecentEmojis] = useState<string[]>([]);
   const [recentCustomEmojis, setRecentCustomEmojis] = useState<string[]>([]);
   const { isMobile } = useAppLayout();
+  const customEmojiPickerRef = useRef<HTMLDivElement | undefined>(undefined);
+  const stickerPickerRef = useRef<HTMLDivElement | undefined>(undefined);
+  const giftPickerRef = useRef<HTMLDivElement | undefined>(undefined);
 
   const [handleMouseEnter, handleMouseLeave] = useMouseInside(isOpen, onClose, undefined, isMobile);
   const { shouldRender, transitionClassNames } = useShowTransitionDeprecated(isOpen, onClose, false, false);
@@ -183,7 +186,7 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
     onCustomEmojiSelect(emoji);
   });
 
-  const handleSearch = useLastCallback((type: 'stickers' | 'gifs') => {
+  const handleSearch = useLastCallback((type: 'stickers' | 'gifs' | 'customEmoji') => {
     onClose();
     onSearchOpen(type);
   });
@@ -196,7 +199,7 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
 
   function renderContent(isActive: boolean, isFrom: boolean) {
     switch (activeTab) {
-      case SymbolMenuTabs.Emoji:
+      case canSendPlainText && SymbolMenuTabs.Emoji:
         return (
           <EmojiPicker
             className="picker-tab"
@@ -206,18 +209,22 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
       case SymbolMenuTabs.CustomEmoji:
         return (
           <CustomEmojiPicker
+            ref={customEmojiPickerRef}
             className="picker-tab"
+            withRecent
             isHidden={!isOpen || !isActive}
             idPrefix={idPrefix}
             loadAndPlay={isOpen && (isActive || isFrom)}
             chatId={chatId}
             isTranslucent={!isMobile && isBackgroundTranslucent}
             onCustomEmojiSelect={handleCustomEmojiSelect}
+            onEmojiSelect={handleEmojiSelect}
           />
         );
       case SymbolMenuTabs.Stickers:
         return (
           <StickerPicker
+            stickerRef={stickerPickerRef}
             className="picker-tab"
             isHidden={!isOpen || !isActive}
             loadAndPlay={canSendStickers ? isOpen && (isActive || isFrom) : false}
@@ -233,6 +240,7 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
       case SymbolMenuTabs.GIFs:
         return (
           <GifPicker
+            ref={giftPickerRef}
             className="picker-tab"
             loadAndPlay={canSendGifs ? isOpen && (isActive || isFrom) : false}
             canSendGifs={canSendGifs}
@@ -248,6 +256,22 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
     event.stopPropagation();
   }
 
+  const onSwitchTab = (tab: SymbolMenuTabs): void => {
+    setActiveTab(tab);
+    switch (tab) {
+      case SymbolMenuTabs.CustomEmoji: {
+        customEmojiPickerRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' });
+        break;
+      }
+      case SymbolMenuTabs.Stickers: {
+        stickerPickerRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' });
+        break;
+      }
+      case SymbolMenuTabs.GIFs: {
+        giftPickerRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
   const content = (
     <>
       <div className="SymbolMenu-main" onClick={stopPropagation}>
@@ -276,12 +300,13 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
       )}
       <SymbolMenuFooter
         activeTab={activeTab}
-        onSwitchTab={setActiveTab}
+        onSwitchTab={onSwitchTab}
         onRemoveSymbol={onRemoveSymbol}
         canSearch={isMessageComposer}
         onSearchOpen={handleSearch}
         isAttachmentModal={isAttachmentModal}
         canSendPlainText={canSendPlainText}
+        canEmoji={false}
       />
     </>
   );

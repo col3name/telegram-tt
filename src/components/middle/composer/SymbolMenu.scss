@@ -1,6 +1,8 @@
 @use "../../../styles/mixins";
 
 .SymbolMenu {
+  background: var(--color-esg-background);
+
   &.attachment-modal-symbol-menu {
     position: absolute;
     z-index: var(--z-symbol-menu-modal);
@@ -45,6 +47,13 @@
   &-main {
     height: calc(var(--symbol-menu-height) - var(--symbol-menu-footer-height));
     max-height: calc(100vh - var(--symbol-menu-footer-height));
+    //background: var(--color-background-compact-menu-esg);
+    background: var(--color-esg-background);
+
+    &-full {
+      height: calc(var(--symbol-menu-height));
+      max-height: calc(100vh);
+    }
 
     @media (max-width: 600px) {
       max-height: calc(100vh - var(--symbol-menu-footer-height) - env(safe-area-inset-bottom));
@@ -59,6 +68,8 @@
     /* stylelint-disable-next-line plugin/whole-pixel */
     box-shadow: 0 -0.5px var(--color-borders-alternate);
     position: relative;
+    z-index: 1;
+    background: var(--color-esg-background);
 
     .Button {
       flex-shrink: 0;
@@ -68,7 +79,7 @@
       padding: 0;
 
       &.activated {
-        pointer-events: none;
+        //pointer-events: none;
         color: var(--color-text);
       }
 
@@ -185,6 +196,10 @@
     align-items: center;
     justify-content: space-between;
     color: rgba(var(--color-text-secondary-rgb), 0.75);
+
+    &-center {
+      justify-content: center;
+    }
   }
 
   &-title {
@@ -209,10 +224,14 @@
   }
 
   &-name {
+    font-size: 1.1rem;
+    line-height: 1.6875rem;
+    font-weight: var(--font-weight-semibold);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     text-align: center;
+    margin: 0;
   }
 
   &-amount {

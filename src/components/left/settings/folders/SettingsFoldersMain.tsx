@@ -220,7 +220,7 @@ const SettingsFoldersMain: FC<OwnProps & StateProps> = ({
             isRtl={lang.isRtl}
           >
             <Icon name="add" />
-            {lang('CreateNewFilter') + 'sdfd'}
+            {lang('CreateNewFilter')}
           </Button>
         )}
       </div>

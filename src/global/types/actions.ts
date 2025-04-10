@@ -10,6 +10,7 @@ import type {
   ApiChatType,
   ApiContact,
   ApiDraft,
+  ApiEmojiGroup,
   ApiExportedInvite,
   ApiFormattedText,
   ApiGeoPoint,
@@ -128,13 +129,31 @@ export interface ActionPayloads {
   };
   goToAuthQrCode: undefined;
 
+  setCustomEmojiGroupSearchQuery: {
+    emojiGroup: ApiEmojiGroup | undefined;
+    onTab?: boolean;
+  } & WithTabId;
+
+  setCustomEmojiSearchQuery: {
+    query?: string;
+    emojiGroup?: ApiEmojiGroup;
+    onTab?: boolean;
+  } & WithTabId;
+
   // stickers & GIFs
-  setStickerSearchQuery: { query?: string } & WithTabId;
+  setStickerSearchQuery: {
+    query?: string;
+    onTab?: boolean;
+  } & WithTabId;
   saveGif: {
     gif: ApiVideo;
     shouldUnsave?: boolean;
   } & WithTabId;
-  setGifSearchQuery: { query?: string } & WithTabId;
+  setGifSearchQuery: {
+    query?: string;
+    group?: ApiEmojiGroup;
+    onTab?: boolean;
+  } & WithTabId;
   searchMoreGifs: WithTabId | undefined;
   faveSticker: { sticker: ApiSticker } & WithTabId;
   unfaveSticker: { sticker: ApiSticker };
@@ -1788,6 +1807,15 @@ export interface ActionPayloads {
     shouldIgnoreCache?: boolean;
   } & WithTabId;
   closeStickerSetModal: WithTabId | undefined;
+
+  fetchEmojiGroups: { premium?: boolean };
+
+  loadStickersForEmojiGroup: {
+    emoji: string;
+    group: ApiEmojiGroup;
+  };
+
+  clearStickersForEmojiGroup: undefined;
 
   loadStickersForEmoji: {
     emoji: string;

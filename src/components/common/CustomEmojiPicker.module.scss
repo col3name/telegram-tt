@@ -1,14 +1,37 @@
 .root {
-  --emoji-size: 2.25rem;
+  --emoji-size: 2.4rem;
+  --emoji-group-size: 2.25rem;
 
   height: 100%;
   max-height: calc(100 * var(--vh));
 
   :global(.symbol-set-container) {
-    --symbol-set-gap-size: 0.625rem;
+    --symbol-set-gap-size: 0.25rem;
   }
 }
 
 .activated {
-  background-color: var(--color-interactive-element-hover);
+  background-color: var(--color-interactive-element-hover) !important;
 }
+
+.emojisContainer {
+  display: flex;
+  flex: 0 0 auto;
+
+  width: var(--emoji-size);
+  height: min-content;
+  margin: 0 0.3125rem;
+  border-radius: 15px;
+
+  //background: rgba(0, 0, 0, 0.06);
+  scrollbar-width: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  &Active {
+    width: 8.5rem;
+    background-color: var(--color-interactive-element-hover);
+
+  }
+}
+

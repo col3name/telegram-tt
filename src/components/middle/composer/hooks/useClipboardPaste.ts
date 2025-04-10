@@ -7,12 +7,14 @@ import type { ApiAttachment, ApiFormattedText, ApiMessage } from '../../../../ap
 import {
   EDITABLE_INPUT_ID, EDITABLE_INPUT_MODAL_ID, EDITABLE_STORY_INPUT_ID,
 } from '../../../../config';
+import { ATTR_PASSTED_API_FORMATTED_TEXT } from '../../../../util/clipboard';
 import { canReplaceMessageMedia, isUploadingFileSticker } from '../../../../global/helpers';
 import { containsCustomEmoji, stripCustomEmoji } from '../../../../global/helpers/symbols';
 import parseHtmlAsFormattedText from '../../../../util/parseHtmlAsFormattedText';
 import buildAttachment from '../helpers/buildAttachment';
 import { preparePastedHtml } from '../helpers/cleanHtml';
 import getFilesFromDataTransferItems from '../helpers/getFilesFromDataTransferItems';
+import { parseHtml } from '../../../../lib/cleanDocsHtml';
 
 import useOldLang from '../../../../hooks/useOldLang';
 
@@ -22,6 +24,21 @@ const NAMESPACE_PREFIX_WORD = 'xmlns:w';
 
 const VALID_TARGET_IDS = new Set([EDITABLE_INPUT_ID, EDITABLE_INPUT_MODAL_ID, EDITABLE_STORY_INPUT_ID]);
 const CLOSEST_CONTENT_EDITABLE_SELECTOR = 'div[contenteditable]';
+
+function getPastedApiFormattedText(html: string) {
+  const htmlBody = html ? parseHtml(html) : undefined;
+  let pastedFormattedText: ApiFormattedText | undefined;
+  if (htmlBody) {
+    const attr = htmlBody.firstElementChild?.getAttribute(ATTR_PASSTED_API_FORMATTED_TEXT);
+    if (htmlBody.firstElementChild && attr) {
+      const text = htmlBody.firstElementChild.innerText;
+      pastedFormattedText = JSON.parse(text);
+      htmlBody.firstElementChild.remove();
+      html = htmlBody.innerHTML;
+    }
+  }
+  return { html, pastedFormattedText };
+}
 
 const useClipboardPaste = (
   isActive: boolean,
@@ -58,13 +75,13 @@ const useClipboardPaste = (
       }
 
       const pastedText = e.clipboardData.getData('text');
-      const html = e.clipboardData.getData('text/html');
+      let html = e.clipboardData.getData('text/html');
+      const ret = getPastedApiFormattedText(html);
+      html = ret.html;
 
-      let pastedHtml = preparePastedHtml(html);
-      // debugger;
-      let pastedFormattedText = html ? parseHtmlAsFormattedText(
-        pastedHtml, undefined, true,
-      ) : undefined;
+      let pastedFormattedText = ret.pastedFormattedText || (
+        html ? parseHtmlAsFormattedText(preparePastedHtml(html), undefined) : undefined
+      );
 
       if (pastedFormattedText && containsCustomEmoji(pastedFormattedText) && shouldStripCustomEmoji) {
         pastedFormattedText = stripCustomEmoji(pastedFormattedText);

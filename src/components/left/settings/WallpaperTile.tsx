@@ -22,8 +22,10 @@ import useShowTransitionDeprecated from '../../../hooks/useShowTransitionDepreca
 import ProgressSpinner from '../../ui/ProgressSpinner';
 
 import './WallpaperTile.scss';
+import AnimatedBackground, {BgWallpaper} from "../../bgWallpaper/AnimatedBackground";
 
 type OwnProps = {
+  imageSrc?: any;
   wallpaper: ApiWallpaper;
   theme: ThemeKey;
   isSelected: boolean;
@@ -31,6 +33,7 @@ type OwnProps = {
 };
 
 const WallpaperTile: FC<OwnProps> = ({
+  imageSrc,
   wallpaper,
   theme,
   isSelected,
@@ -41,8 +44,9 @@ const WallpaperTile: FC<OwnProps> = ({
   const localBlobUrl = document.previewBlobUrl;
   const previewBlobUrl = useMedia(`${localMediaHash}?size=m`);
   const thumbRef = useCanvasBlur(document.thumbnail?.dataUri, Boolean(previewBlobUrl), true);
+  const src = imageSrc || previewBlobUrl || localBlobUrl;
   const { transitionClassNames } = useShowTransitionDeprecated(
-    Boolean(previewBlobUrl || localBlobUrl),
+    Boolean(src),
     undefined,
     undefined,
     'slow',
@@ -101,7 +105,7 @@ const WallpaperTile: FC<OwnProps> = ({
           className="thumbnail"
         />
         <img
-          src={previewBlobUrl || localBlobUrl}
+          src={src}
           className={buildClassName('full-media', transitionClassNames)}
           alt=""
           draggable={false}

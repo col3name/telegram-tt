@@ -86,6 +86,8 @@ const GifSearch: FC<OwnProps & StateProps> = ({
         return;
       }
 
+      const customEvent = new CustomEvent('onAnimatedChatBackground');
+      document.dispatchEvent(customEvent);
       if (shouldSchedule) {
         requestCalendar((scheduledAt) => {
           sendMessage({
@@ -103,7 +105,7 @@ const GifSearch: FC<OwnProps & StateProps> = ({
     if (IS_TOUCH_ENV) {
       setGifSearchQuery({ query: undefined });
     }
-  }, [canSendGifs, currentMessageList, requestCalendar]);
+  }, [sendMessage, setGifSearchQuery, canSendGifs, currentMessageList, requestCalendar]);
 
   const handleSearchMoreGifs = useCallback(() => {
     searchMoreGifs();
@@ -164,7 +166,7 @@ const GifSearch: FC<OwnProps & StateProps> = ({
   );
 };
 
-export default memo(withGlobal(
+export default memo(withGlobal<OwnProps>(
   (global): StateProps => {
     const currentSearch = selectCurrentGifSearch(global);
     const { query, results } = currentSearch || {};

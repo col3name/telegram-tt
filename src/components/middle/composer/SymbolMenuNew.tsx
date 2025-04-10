@@ -96,7 +96,7 @@ const SymbolMenuNew: FC<OwnProps & StateProps> = ({
   addRecentCustomEmoji,
   ...menuPositionOptions
 }) => {
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(1);
   const [recentEmojis, setRecentEmojis] = useState<string[]>([]);
   const [recentCustomEmojis, setRecentCustomEmojis] = useState<string[]>([]);
   const { isMobile } = useAppLayout();
@@ -198,7 +198,9 @@ const SymbolMenuNew: FC<OwnProps & StateProps> = ({
       case SymbolMenuTabs.CustomEmoji:
         return (
           <CustomEmojiPicker
-            isFolder={true}
+            withFolder
+            withRecent={false}
+            isFolder
             className="picker-tab"
             isHidden={!isOpen || !isActive}
             idPrefix={idPrefix}
@@ -206,6 +208,7 @@ const SymbolMenuNew: FC<OwnProps & StateProps> = ({
             chatId={chatId}
             isTranslucent={!isMobile && isBackgroundTranslucent}
             onCustomEmojiSelect={handleCustomEmojiSelect}
+            onEmojiSelect={handleEmojiSelect}
           />
         );
     }
@@ -219,7 +222,7 @@ const SymbolMenuNew: FC<OwnProps & StateProps> = ({
 
   const content = (
     <>
-      <div className="SymbolMenu-main" onClick={stopPropagation}>
+      <div className="SymbolMenu-main SymbolMenu-main-full" onClick={stopPropagation}>
         {isActivated && (
           <Transition
             name="slide"
@@ -243,15 +246,16 @@ const SymbolMenuNew: FC<OwnProps & StateProps> = ({
           <Icon name="close" />
         </Button>
       )}
-      <SymbolMenuFooter
-        activeTab={activeTab}
-        onSwitchTab={setActiveTab}
-        onRemoveSymbol={onRemoveSymbol}
-        canSearch={isMessageComposer}
-        onSearchOpen={handleSearch}
-        isAttachmentModal={isAttachmentModal}
-        canSendPlainText={canSendPlainText}
-      />
+      {/*<SymbolMenuFooter*/}
+      {/*  activeTab={activeTab}*/}
+      {/*  onSwitchTab={setActiveTab}*/}
+      {/*  onRemoveSymbol={onRemoveSymbol}*/}
+      {/*  canSearch={isMessageComposer}*/}
+      {/*  onSearchOpen={handleSearch}*/}
+      {/*  isAttachmentModal={isAttachmentModal}*/}
+      {/*  canSendPlainText={canSendPlainText}*/}
+      {/*  canEmoji={canSendPlainText}*/}
+      {/*/>*/}
     </>
   );
 

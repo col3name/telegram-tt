@@ -33,7 +33,7 @@ const headers = [
   'H6',
 ];
 
-function parseHtml(html: string): HTMLElement {
+export function parseHtml(html: string): HTMLElement {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 

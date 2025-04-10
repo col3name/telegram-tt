@@ -9,12 +9,10 @@ import type { ThemeKey } from '../../../types';
 import { SettingsScreens, UPLOADING_WALLPAPER_SLUG } from '../../../types';
 
 import { DARK_THEME_PATTERN_COLOR, DEFAULT_PATTERN_COLOR } from '../../../config';
-import { selectTheme } from '../../../global/selectors';
 import { getAverageColor, getPatternColor, rgb2hex } from '../../../util/colors';
 import { validateFiles } from '../../../util/files';
 import { throttle } from '../../../util/schedulers';
 import { openSystemFilesDialog } from '../../../util/systemFilesDialog';
-import buildClassName from '../../../util/buildClassName';
 
 import useHistoryBack from '../../../hooks/useHistoryBack';
 import useOldLang from '../../../hooks/useOldLang';
@@ -23,9 +21,38 @@ import Checkbox from '../../ui/Checkbox';
 import ListItem from '../../ui/ListItem';
 import Loading from '../../ui/Loading';
 import WallpaperTile from './WallpaperTile';
+import Image1 from '../../../assets/wallpapers/web.telegram.org_k_ (1).png';
+import Image2 from '../../../assets/wallpapers/web.telegram.org_k_ (2).png';
+import Image3 from '../../../assets/wallpapers/web.telegram.org_k_ (3).png';
+import Image4 from '../../../assets/wallpapers/web.telegram.org_k_ (4).png';
+import Image5 from '../../../assets/wallpapers/web.telegram.org_k_ (5).png';
+import Image6 from '../../../assets/wallpapers/web.telegram.org_k_ (6).png';
+import Image7 from '../../../assets/wallpapers/web.telegram.org_k_ (7).png';
+import Image8 from '../../../assets/wallpapers/web.telegram.org_k_ (8).png';
+import Image9 from '../../../assets/wallpapers/web.telegram.org_k_ (9).png';
+import Image10 from '../../../assets/wallpapers/web.telegram.org_k_ (10).png';
+import Image11 from '../../../assets/wallpapers/web.telegram.org_k_ (11).png';
+import Image12 from '../../../assets/wallpapers/web.telegram.org_k_ (12).png';
+import Image13 from '../../../assets/wallpapers/web.telegram.org_k_ (13).png';
+import Image14 from '../../../assets/wallpapers/web.telegram.org_k_ (14).png';
+import Image15 from '../../../assets/wallpapers/web.telegram.org_k_ (15).png';
+import Image16 from '../../../assets/wallpapers/web.telegram.org_k_ (16).png';
+import Image17 from '../../../assets/wallpapers/web.telegram.org_k_ (17).png';
+import Image18 from '../../../assets/wallpapers/web.telegram.org_k_ (18).png';
+import Image19 from '../../../assets/wallpapers/web.telegram.org_k_ (19).png';
+import Image20 from '../../../assets/wallpapers/web.telegram.org_k_ (20).png';
+import Image21 from '../../../assets/wallpapers/web.telegram.org_k_ (21).png';
+import Image22 from '../../../assets/wallpapers/web.telegram.org_k_ (22).png';
+import Image23 from '../../../assets/wallpapers/web.telegram.org_k_ (23).png';
+import Image24 from '../../../assets/wallpapers/web.telegram.org_k_ (24).png';
+
+const images = [
+  Image1, Image2, Image3, Image4, Image5, Image6, Image7, Image8,
+  Image9, Image10, Image11, Image12, Image13, Image14, Image15, Image16,
+  Image17, Image18, Image19, Image20, Image21, Image22, Image23, Image24,
+];
 
 import './SettingsGeneralBackground.scss';
-import { maskImages } from '../../bgWallpaper/AnimatedBackground';
 
 type OwnProps = {
   isActive?: boolean;
@@ -36,6 +63,8 @@ type OwnProps = {
 type StateProps = {
   background?: string;
   isBlurred?: boolean;
+  docId?: number;
+  isDark?: boolean;
   loadedWallpapers?: ApiWallpaper[];
   theme: ThemeKey;
   pattern?: string;
@@ -51,6 +80,7 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
   onReset,
   pattern,
   background,
+  docId,
   isBlurred,
   loadedWallpapers,
   theme,
@@ -100,12 +130,25 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
     });
   }, [setThemeSettings, theme]);
 
-  const handleWallPaperSelect = useCallback((slug: string) => {
-    // console.log({slug, loadedWallpapers});
-    setThemeSettings({ theme: themeRef.current!, background: slug, pattern: undefined });
-    const currentWallpaper = loadedWallpapers && loadedWallpapers.find((wallpaper: ApiWallpaper) => wallpaper.slug === slug);
-    // console.log({currentWallpaper});
-    // debugger;
+  const handleWallPaperSelect = useCallback((slug: string, index: number) => {
+    setThemeSettings({ theme: themeRef.current!, background: slug, docId: undefined, pattern: undefined });
+    const currentWallpaper: ApiWallpaper | undefined = loadedWallpapers && loadedWallpapers?.[index];;
+    if (currentWallpaper?.document.mimeType === 'application/x-tgwallpattern') {
+      const stg = currentWallpaper.settings;
+      const colors1 = [
+        stg?.backgroundColor, stg?.secondBackgroundColor,
+        stg?.thirdBackgroundColor, stg?.fourthBackgroundColor,
+      ];
+      setThemeSettings({
+        intencity: stg?.intensity || 40,
+        theme: themeRef.current!, background: slug,
+        pattern: slug,
+        isBlurred: true,
+        docId: index,
+        colors: colors1,
+      });
+      return;
+    }
     if (currentWallpaper?.document.thumbnail) {
       getAverageColor(currentWallpaper.document.thumbnail.dataUri)
         .then((color) => {
@@ -128,34 +171,6 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
   });
 
   const isUploading = loadedWallpapers?.[0] && loadedWallpapers[0].slug === UPLOADING_WALLPAPER_SLUG;
-
-  const onSelectPattern = useCallback((newPattern: string) => {
-    const colors: Record<string, string[]> = {
-      animals: ['#dbddbb', '#6ba587', '#d5d88d', '#88b884'],
-      beach: ['#fec496', '#dd6cb9', '#962fbf', '#4f5bd5'],
-      astronaut_cats: ['#7ed281', '#e68896', '#73c4e6', '#e5a7eb'],
-      cats_and_dogs: ['#85d685', '#67a3f2', '#8fe1d6', '#dceb92'],
-      christmas: ['#efd359', '#e984d8', '#ac86ed', '#40cdde'],
-      fantasy: ['#e8c06e', '#f29ebf', '#f0e486', '#eaa36e'],
-      late_night_delight: ['#b9e2ff', '#eccbff', '#a2b4ff', '#daeacb'],
-      magic: ['#f0c07a', '#afd677', '#e4d573', '#7fc289'],
-      math: ['#6c8cd4', '#d4a7c9', '#b2b1ee', '#b2b1ee'],
-      paris: ['#f7dd6d', '#e96caf', '#edac4c', '#a464f4'],
-      games: ['#85d685', '#67a3f2', '#8fe1d6', '#dceb92'],
-      snowflakes: ['#4f5bd5', '#962fbf', '#dd6cb9', '#fec496'],
-      space: ['#fbd9e6', '#fb9ae5', '#d5f7ff', '#73caff'],
-      star_wars: ['#8adbf2', '#888dec', '#e39fea', '#679ced'],
-      sweets: ['#b0cdeb', '#9fb0ea', '#bbead5', '#b2e3dd'],
-      tattoos: ['#ffc3b2', '#e2c0ff', '#ffe7b2', '#ffe7b2'],
-      underwater_world: ['#97beeb', '#b1e9ea', '#c6b1ef', '#efb7dc'],
-      zoo: ['#e4b2ea', '#8376c2', '#eab9d9', '#b493e6'],
-      unicorn: ['#d1a3e2', '#edd594', '#e5a1d0', '#ecd893'],
-    };
-
-    const colors1 = newPattern in colors ? colors[newPattern] : undefined;
-    // console.log({ colors1, newPattern });
-    setThemeSettings({ theme: themeRef.current!, background: newPattern, pattern: newPattern, colors: colors1 });
-  }, [setThemeSettings]);
 
   return (
     <div className="SettingsGeneralBackground settings-content custom-scroll">
@@ -184,34 +199,32 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
         <Checkbox
           label={lang('BackgroundBlurred')}
           checked={Boolean(isBlurred)}
+          disabled={docId !== undefined}
           onChange={handleWallPaperBlurChange}
         />
       </div>
-
-      {/*<div>{`Selected ${pattern}`}</div>*/}
       {loadedWallpapers ? (
         <div className="settings-wallpapers">
-          {maskImages.map((value: string) => (
-            <div
-              key={value}
-              className={buildClassName(
-                'WallpaperTile',
-                value === pattern && 'selected',
-              )}
-              onClick={() => onSelectPattern(value)}
-            >
-              {value}
-            </div>
-          ))}
-          {loadedWallpapers.map((wallpaper) => (
-            <WallpaperTile
-              key={wallpaper.slug}
-              wallpaper={wallpaper}
-              theme={theme}
-              isSelected={background === wallpaper.slug}
-              onClick={handleWallPaperSelect}
-            />
-          ))}
+          {loadedWallpapers.map((wallpaper: ApiWallpaper, index: number) => {
+            if (index === 5 || index === 13 || index === 16) {
+              return undefined;
+            }
+            if (wallpaper.isPattern && 'patternIndex' in wallpaper && wallpaper.patternIndex >= 16) {
+              return undefined;
+            }
+            const image = (wallpaper.isPattern && 'patternIndex' in wallpaper && wallpaper.patternIndex < images.length && wallpaper.patternIndex <= 16)
+              ? images[wallpaper.patternIndex] : undefined;
+            return (
+              <WallpaperTile
+                imageSrc={image}
+                key={wallpaper?.document?.id + wallpaper.slug + ':' + index}
+                wallpaper={wallpaper}
+                theme={theme}
+                isSelected={background === wallpaper.slug && docId === index}
+                onClick={(slug) => handleWallPaperSelect(slug, index)}
+              />
+            );
+          })}
         </div>
       ) : (
         <Loading />
@@ -220,18 +233,32 @@ const SettingsGeneralBackground: FC<OwnProps & StateProps> = ({
   );
 };
 
+function getWallpapers(loadedWallpapers: ApiWallpaper[]) {
+  let patternIndex = 0;
+  return loadedWallpapers?.map((it) => {
+    const isPattern = it.document.mimeType === 'application/x-tgwallpattern';
+    const result = { ...it, isPattern: isPattern, patternIndex };
+    if (isPattern) {
+      patternIndex++;
+    }
+    return result;
+  }, []);
+}
+
 export default memo(withGlobal<OwnProps>(
   (global): StateProps => {
-    const theme = selectTheme(global);
-    const { background, isBlurred, pattern } = global.settings.themes[theme] || {};
+    // const theme = selectTheme(global);
+    const { theme } = global.settings.byKey;
+    const { background, docId, isBlurred, pattern, intencity } = global.settings.themes[theme] || {};
     const { loadedWallpapers } = global.settings;
 
-    // console.log( global.settings.themes, loadedWallpapers);
     return {
       pattern,
       background,
+      docId,
       isBlurred,
-      loadedWallpapers,
+      isDark: intencity < 0,
+      loadedWallpapers: getWallpapers(loadedWallpapers),
       theme,
     };
   },

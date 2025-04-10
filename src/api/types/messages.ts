@@ -43,6 +43,12 @@ export interface ApiPhoto {
   isSpoiler?: boolean;
 }
 
+export interface ApiEmojiGroup {
+  iconEmojiId: BigInteger;
+  title: string;
+  emoticons?: string[];
+}
+
 export interface ApiSticker {
   mediaType: 'sticker';
   id: string;

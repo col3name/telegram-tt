@@ -1,6 +1,7 @@
-import { Api as GramJs } from '../../../lib/gramjs';
+import { Api, Api as GramJs } from '../../../lib/gramjs';
 
 import type {
+  ApiEmojiGroup,
   ApiEmojiInteraction, ApiSticker, ApiStickerSet, ApiStickerSetInfo, GramJsEmojiInteraction,
 } from '../../types';
 
@@ -8,6 +9,7 @@ import { LOTTIE_STICKER_MIME_TYPE, VIDEO_STICKER_MIME_TYPE } from '../../../conf
 import { compact } from '../../../util/iteratees';
 import localDb from '../localDb';
 import { buildApiPhotoPreviewSizes, buildApiThumbnailFromCached, buildApiThumbnailFromPath } from './common';
+import TypeEmojiGroup = Api.TypeEmojiGroup;
 
 export function buildStickerFromDocument(document: GramJs.TypeDocument,
   isNoPremium?: boolean, isPremium?: boolean): ApiSticker | undefined {
@@ -44,6 +46,7 @@ export function buildStickerFromDocument(document: GramJs.TypeDocument,
 
   const sizeAttribute = imageSizeAttribute || videoSizeAttribute;
 
+  // TODO ffind how covnert result of stickers groups into global.stickers.effect.sticker
   const stickerOrEmojiAttribute = (stickerAttribute || customEmojiAttribute)!;
   const stickerSetInfo = buildApiStickerSetInfo(stickerOrEmojiAttribute?.stickerset);
   const emoji = stickerOrEmojiAttribute?.alt;
@@ -186,6 +189,16 @@ export function buildApiEmojiInteraction(json: GramJsEmojiInteraction): ApiEmoji
   return {
     timestamps: json.a.map(({ t }) => t),
   };
+}
+
+export function processEmojiGroupsResult(groups: Api.TypeEmojiGroup[]): ApiEmojiGroup[] {
+  const result = groups.map((group: TypeEmojiGroup) => ({
+    iconEmojiId: String(group.iconEmojiId),
+    title: group.title,
+    emoticons: 'emoticons' in group ? group.emoticons : [],
+  }));
+  // @ts-ignore
+  return result as ApiEmojiGroup[];
 }
 
 export function processStickerPackResult(packs: GramJs.StickerPack[]) {

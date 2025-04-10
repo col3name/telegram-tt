@@ -62,6 +62,7 @@ import styles from './AttachmentModal.module.scss';
 
 export type OwnProps = {
   chatId: string;
+  animateBackground?: VoidFunction;
   threadId: ThreadId;
   attachments: ApiAttachment[];
   editingMessage?: ApiMessage;
@@ -109,6 +110,7 @@ const DROP_LEAVE_TIMEOUT_MS = 150;
 const MAX_LEFT_CHARS_TO_SHOW = 100;
 
 const AttachmentModal: FC<OwnProps & StateProps> = ({
+  animateBackground,
   chatId,
   threadId,
   attachments,
@@ -297,6 +299,7 @@ const AttachmentModal: FC<OwnProps & StateProps> = ({
       const send = ((shouldSchedule || shouldSendScheduled) && isForMessage && !editingMessage) ? onSendScheduled
         : isSilent ? onSendSilent : onSend;
       send(isSendingCompressed, shouldSendGrouped, isInvertedMedia);
+      animateBackground?.();
       updateAttachmentSettings({
         shouldCompress: shouldSuggestCompression === undefined ? isSendingCompressed : undefined,
         shouldSendGrouped,

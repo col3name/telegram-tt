@@ -79,6 +79,7 @@ export { default as EmojiTooltip } from '../components/middle/composer/EmojiTool
 export { default as InlineBotTooltip } from '../components/middle/composer/InlineBotTooltip';
 export { default as SendAsMenu } from '../components/middle/composer/SendAsMenu';
 
+export { default as CustomEmojiSearch } from '../components/right/CustomEmojiSearch';
 export { default as StickerSearch } from '../components/right/StickerSearch';
 export { default as GifSearch } from '../components/right/GifSearch';
 export { default as Statistics } from '../components/right/statistics/Statistics';

@@ -22,7 +22,7 @@ import {
 import getMessageIdsForSelectedText from '../../../../util/getMessageIdsForSelectedText';
 import * as mediaLoader from '../../../../util/mediaLoader';
 import { IS_SAFARI } from '../../../../util/windowEnvironment';
-import { renderMessageText } from '../../../common/helpers/renderMessageText';
+import { getMessageApiFormattedText, renderMessageText } from '../../../common/helpers/renderMessageText';
 
 type ICopyOptions = {
   label: string;
@@ -95,10 +95,13 @@ export function getMessageCopyOptions(
           const clipboardText = renderMessageText(
             { message, shouldRenderAsHtml: true },
           );
+          const formattedText = getMessageApiFormattedText(message);
+
           if (clipboardText) {
             copyHtmlToClipboard(
               clipboardText.join(''),
               getMessageTextWithSpoilers(message, statefulContent)!,
+              formattedText,
             );
           }
         }

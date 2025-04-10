@@ -1,4 +1,4 @@
-import type { ApiSticker, ApiStickerSet, ApiVideo } from '../../api/types';
+import type {ApiEmojiGroup, ApiSticker, ApiStickerSet, ApiVideo} from '../../api/types';
 import type { GlobalState, TabArgs } from '../types';
 
 import { getCurrentTabId } from '../../util/establishMultitabRole';
@@ -10,12 +10,37 @@ export function updateStickerSearch<T extends GlobalState>(
   global: T,
   hash: string,
   resultIds?: string[],
+  query?: string,
+  onTab?: boolean,
   ...[tabId = getCurrentTabId()]: TabArgs<T>
 ): T {
   return updateTabState(global, {
     stickerSearch: {
       ...selectTabState(global, tabId).stickerSearch,
+      query,
       hash,
+      onTab,
+      resultIds,
+    },
+  }, tabId);
+}
+
+export function updateCustomEmojiSearch<T extends GlobalState>(
+  global: T,
+  hash: string,
+  resultIds?: string[],
+  query?: string,
+  group?: ApiEmojiGroup,
+  onTab?: boolean,
+  ...[tabId = getCurrentTabId()]: TabArgs<T>
+): T {
+  return updateTabState(global, {
+    customEmojiSearch: {
+      ...selectTabState(global, tabId).customEmojiSearch,
+      query,
+      hash,
+      group,
+      onTab,
       resultIds,
     },
   }, tabId);

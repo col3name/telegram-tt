@@ -1,4 +1,4 @@
-import type { ApiPrivacySettings, ApiUsername } from '../../../api/types';
+import type { ApiPrivacySettings, ApiSticker, ApiUsername } from '../../../api/types';
 import type { ActionReturnType } from '../../types';
 import {
   ProfileEditProgress,
@@ -163,18 +163,55 @@ addActionHandler('checkUsername', async (global, actions, payload): Promise<void
   setGlobal(global);
 });
 
+const emojies = [
+  '🐥',
+  '🏠',
+  '⛄' ,
+  '💎' ,
+  '👨‍🏫' ,
+  '🌷' ,
+  '💜' ,
+  '🎄' ,
+  '🎮' ,
+]
+const themeEmojiMap = {
+  '🐥' : '4906730862705378010',
+  '🏠': '4909228789914927963',
+  '⛄' : '4913494396814492274',
+  '💎' : '4907219728767910669',
+  '👨‍🏫' : '5089629605464113924',
+  '🌷' : '4907174300898820817',
+  '💜' : '4909103449884328658',
+  '🎄' : '4906829303355802062',
+  '🎮' : '4909364218823705430',
+};
+
 addActionHandler('loadWallpapers', async (global): Promise<void> => {
+  if (
+    Array.isArray(global.settings.loadedWallpapers)
+    && global.settings.loadedWallpapers.length > 0
+  ) {
+    return;
+  }
   const result = await callApi('fetchWallpapers');
   if (!result) {
     return;
   }
 
   global = getGlobal();
+  const mapping = global.animatedEmojis?.stickers?.reduce((acc, it) => {
+    if (it.emoji) {
+      acc[it.emoji] = it;
+    }
+    return acc;
+  }, {} as Record<string, ApiSticker>);
+
   global = {
     ...global,
     settings: {
       ...global.settings,
       loadedWallpapers: result.wallpapers,
+      animatedEmojis: emojies.map(it => mapping[it]).filter(Boolean),
     },
   };
   setGlobal(global);
@@ -184,7 +221,6 @@ addActionHandler('uploadWallpaper', async (global, actions, payload): Promise<vo
   const file = payload;
   const previewBlobUrl = URL.createObjectURL(file);
 
-  // debugger;
   global = {
     ...global,
     settings: {

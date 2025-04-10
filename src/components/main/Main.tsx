@@ -3,7 +3,7 @@ import '../../global/actions/all';
 import React, {
   beginHeavyAnimation,
   memo, useEffect, useLayoutEffect,
-  useRef, useState,
+  useRef, useSignal, useState,
 } from '../../lib/teact/teact';
 import { addExtraClass } from '../../lib/teact/teact-dom';
 import { getActions, getGlobal, withGlobal } from '../../global';
@@ -533,16 +533,21 @@ const Main = ({
   useBackgroundMode(handleBlur, handleFocus, !!IS_ELECTRON);
   useBeforeUnload(handleBlur);
   usePreventPinchZoomGesture(isMediaViewerOpen || isStoryViewerOpen);
+  const [getBgSignalValue, setBgSignalValue] = useSignal(undefined);
 
   return (
     <div ref={containerRef} id="Main" className={className}>
-      {/*root*/}
       <LeftColumn ref={leftColumnRef} isMobile={isMobile} />
-      <MiddleColumn leftColumnRef={leftColumnRef} isMobile={isMobile} />
+      <MiddleColumn
+        leftColumnRef={leftColumnRef}
+        isMobile={isMobile}
+        setBgSignalValue={setBgSignalValue}
+        getBgSignalValue={getBgSignalValue}
+      />
       <RightColumn isMobile={isMobile} />
       <MediaViewer isOpen={isMediaViewerOpen} />
       <StoryViewer isOpen={isStoryViewerOpen} />
-      <ForwardRecipientPicker isOpen={isForwardModalOpen} />
+      <ForwardRecipientPicker isOpen={isForwardModalOpen} getBgSignalValue={getBgSignalValue} />
       <DraftRecipientPicker requestedDraft={requestedDraft} />
       <Notifications isOpen={hasNotifications} />
       <Dialogs isOpen={hasDialogs} />
@@ -551,6 +556,7 @@ const Main = ({
       <SafeLinkModal url={safeLinkModalUrl} />
       <HistoryCalendar isOpen={isHistoryCalendarOpen} />
       <StickerSetModal
+        getBgSignalValue={getBgSignalValue}
         isOpen={Boolean(openedStickerSetShortName)}
         onClose={handleStickerSetModalClose}
         stickerSetShortName={openedStickerSetShortName}

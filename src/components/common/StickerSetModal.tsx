@@ -47,6 +47,7 @@ export type OwnProps = {
   fromSticker?: ApiSticker;
   stickerSetShortName?: string;
   onClose: () => void;
+  getBgSignalValue: any;
 };
 
 type StateProps = {
@@ -62,6 +63,13 @@ type StateProps = {
 
 const INTERSECTION_THROTTLE = 200;
 
+function blurSearchInput() {
+  const searchInput = document.querySelector('.RightHeader .SearchInput input') as HTMLInputElement;
+  if (searchInput) {
+    searchInput.blur();
+  }
+}
+
 const StickerSetModal: FC<OwnProps & StateProps> = ({
   isOpen,
   fromSticker,
@@ -74,6 +82,7 @@ const StickerSetModal: FC<OwnProps & StateProps> = ({
   isCurrentUserPremium,
   shouldUpdateStickerSetOrder,
   currentMessageList,
+  getBgSignalValue,
   onClose,
 }) => {
   const {
@@ -81,6 +90,7 @@ const StickerSetModal: FC<OwnProps & StateProps> = ({
     toggleStickerSet,
     sendMessage,
     showNotification,
+    setStickerSearchQuery,
   } = getActions();
 
   // eslint-disable-next-line no-null/no-null
@@ -130,6 +140,7 @@ const StickerSetModal: FC<OwnProps & StateProps> = ({
         sendMessage({
           messageList: currentMessageList, sticker, isSilent, scheduledAt,
         });
+        getBgSignalValue()?.();
         onClose();
       });
     } else {
@@ -139,9 +150,17 @@ const StickerSetModal: FC<OwnProps & StateProps> = ({
         isSilent,
         shouldUpdateStickerSetOrder: shouldUpdateStickerSetOrder && isAdded,
       });
+      getBgSignalValue()?.();
       onClose();
     }
-  }, [currentMessageList, shouldSchedule, requestCalendar, onClose, shouldUpdateStickerSetOrder, isAdded]);
+    if (isMobile) {
+      blurSearchInput();
+      setStickerSearchQuery({ query: undefined });
+    }
+  }, [
+    currentMessageList, shouldSchedule, requestCalendar, onClose,
+    shouldUpdateStickerSetOrder, isAdded, isMobile, setStickerSearchQuery,
+  ]);
 
   const handleButtonClick = useCallback(() => {
     if (renderingStickerSet) {

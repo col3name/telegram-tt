@@ -104,6 +104,8 @@ import styles from './MiddleColumn.module.scss';
 
 interface OwnProps {
   leftColumnRef: React.RefObject<HTMLDivElement>;
+  setBgSignalValue: any;
+  getBgSignalValue: any;
   isMobile?: boolean;
 }
 
@@ -168,6 +170,8 @@ const LAYER_ANIMATION_DURATION_MS = 450 + ANIMATION_END_DELAY;
 
 function MiddleColumn({
   leftColumnRef,
+  getBgSignalValue,
+  setBgSignalValue,
   chatId,
   threadId,
   isComments,
@@ -525,7 +529,7 @@ function MiddleColumn({
         className={bgClassName}
         style={!pattern && customBackgroundValue ? `--custom-background: ${customBackgroundValue}` : undefined}
       >
-        <AnimatedBackground theme={theme} />
+        <AnimatedBackground setBgSignalValue={setBgSignalValue} theme={theme} />
       </div>
       <div id="middle-column-portals" />
       {Boolean(renderingChatId && renderingThreadId) && (
@@ -577,6 +581,7 @@ function MiddleColumn({
                 {renderingCanPost && (
                   <Composer
                     type="messageList"
+                    getBgSignalValue={getBgSignalValue}
                     chatId={renderingChatId!}
                     threadId={renderingThreadId!}
                     messageListType={renderingMessageListType!}

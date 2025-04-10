@@ -207,6 +207,8 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
     effect: {
       stickers: [],
       emojis: [],
+      emojiGroups: [],
+      group: undefined,
     },
     forEmoji: {},
   },
@@ -326,6 +328,7 @@ export const INITIAL_TAB_STATE: TabState = {
 
   gifSearch: {},
   stickerSearch: {},
+  customEmojiSearch: {},
 
   messageLists: [],
   activeChatFolder: 0,

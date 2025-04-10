@@ -281,6 +281,7 @@ export enum RightColumnContent {
   BoostStatistics,
   MessageStatistics,
   StoryStatistics,
+  CustomEmojiSearch,
   StickerSearch,
   GifSearch,
   PollResults,
@@ -470,6 +471,7 @@ export type NotifyException = {
 export type EmojiKeywords = {
   isLoading?: boolean;
   version?: number;
+  keywordsToEmoji?: Record<string, string[]>;
   keywords?: Record<string, string[]>;
 };
 

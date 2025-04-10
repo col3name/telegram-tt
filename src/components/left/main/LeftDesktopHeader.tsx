@@ -1,37 +1,24 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, { memo, useMemo } from '../../../lib/teact/teact';
-import { getActions, withGlobal } from '../../../global';
+import { withGlobal } from '../../../global';
 
 import type { GlobalState } from '../../../global/types';
 import type { ISettings } from '../../../types';
 import { LeftColumnContent } from '../../../types';
 
 import { APP_NAME, DEBUG, IS_BETA } from '../../../config';
-import { selectIsCurrentUserPremium, selectTabState, selectTheme } from '../../../global/selectors';
+import { selectTabState, selectTheme } from '../../../global/selectors';
 import buildClassName from '../../../util/buildClassName';
-// import captureEscKeyListener from '../../../util/captureEscKeyListener';
-// import { formatDateToString } from '../../../util/dates/dateFormat';
 import { IS_ELECTRON, IS_MAC_OS } from '../../../util/windowEnvironment';
 
 import useAppLayout from '../../../hooks/useAppLayout';
-// import useConnectionStatus from '../../../hooks/useConnectionStatus';
-// import useElectronDrag from '../../../hooks/useElectronDrag';
 import useFlag from '../../../hooks/useFlag';
-// import { useHotkeys } from '../../../hooks/useHotkeys';
-// import useLang from '../../../hooks/useLang';
-// import useLastCallback from '../../../hooks/useLastCallback';
 import useOldLang from '../../../hooks/useOldLang';
 import { useFullscreenStatus } from '../../../hooks/window/useFullscreen';
 import useLeftHeaderButtonRtlForumTransition from './hooks/useLeftHeaderButtonRtlForumTransition';
 
-// import Icon from '../../common/icons/Icon';
-// import PeerChip from '../../common/PeerChip';
-// import StoryToggler from '../../story/StoryToggler';
 import Button from '../../ui/Button';
 import DropdownMenu from '../../ui/DropdownMenu';
-// import SearchInput from '../../ui/SearchInput';
-// import ShowTransition from '../../ui/ShowTransition';
-// import ConnectionStatusOverlay from '../ConnectionStatusOverlay';
 import LeftSideMenuItems from './LeftSideMenuItems';
 
 import './LeftMainHeader.scss';
@@ -50,34 +37,16 @@ type OwnProps = {
 type StateProps =
   {
     isLoading: boolean;
-    // globalSearchChatId?: string;
     searchDate?: number;
     theme: ISettings['theme'];
-    // isMessageListOpen: boolean;
-    // isCurrentUserPremium?: boolean;
-    // isConnectionStatusMinimized: ISettings['isConnectionStatusMinimized'];
     areChatsLoaded?: boolean;
-    // canSetPasscode?: boolean;
   }
   & Pick<GlobalState, 'connectionState' | 'isSyncing' | 'isFetchingDifference'>;
-
-// const CLEAR_DATE_SEARCH_PARAM = {date: undefined};
-// const CLEAR_CHAT_SEARCH_PARAM = {id: undefined};
 
 const LeftDesktopHeader: FC<OwnProps & StateProps> = ({
   shouldHideSearch,
   content,
-  // isCurrentUserPremium,
   shouldSkipTransition,
-  // globalSearchChatId,
-  // connectionState,
-  // isSyncing,
-  // isFetchingDifference,
-  // isMessageListOpen,
-  // isConnectionStatusMinimized,
-  // areChatsLoaded,
-  // canSetPasscode,
-  // onSearchQuery,
   onSelectSettings,
   onSelectContacts,
   onSelectArchived,
@@ -95,7 +64,7 @@ const LeftDesktopHeader: FC<OwnProps & StateProps> = ({
     return ({ onTrigger, isOpen }) => (
       <Button
         round
-        ripple={hasMenu && !isMobile}
+        ripple={hasMenu && !isDesktop}
         size="smaller"
         color="translucent"
         className={buildClassName('LeftMainHeader__button', isOpen ? 'active' : '')}
@@ -157,25 +126,18 @@ export default memo(withGlobal<OwnProps>(
     const tabState = selectTabState(global);
     const {
       fetchingStatus,
-      // chatId,
     } = tabState.globalSearch;
     const {
       connectionState, isSyncing, isFetchingDifference,
     } = global;
-    // const { isConnectionStatusMinimized } = global.settings.byKey;
 
     return {
       isLoading: fetchingStatus ? Boolean(fetchingStatus.chats || fetchingStatus.messages) : false,
-      // globalSearchChatId: chatId,
       theme: selectTheme(global),
       connectionState,
       isSyncing,
       isFetchingDifference,
-      // isMessageListOpen: Boolean(selectCurrentMessageList(global)),
-      // isConnectionStatusMinimized,
-      // isCurrentUserPremium: selectIsCurrentUserPremium(global),
       areChatsLoaded: Boolean(global.chats.listIds.active),
-      // canSetPasscode: selectCanSetPasscode(global),
     };
   },
 )(LeftDesktopHeader));

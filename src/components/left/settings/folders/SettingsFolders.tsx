@@ -94,15 +94,9 @@ const SettingsFolders: FC<OwnProps> = ({
       return false;
     }
 
-    // console.log({isCreating, folder: newState.folder});
     if (!isCreating) {
-      // debugger;
-      // console.log(newState.folder, 'editChatFolderWithEmoticon');
       editChatFolder({ id: newState.folderId!, folderUpdate: newState.folder });
     } else {
-      // newState.folder.emoticon = '❤';
-      // debugger;
-      // console.log(newState.folder, 'addChatFolderWithEmoticon');
       addChatFolder({ folder: newState.folder as ApiChatFolder });
     }
 

@@ -46,6 +46,17 @@ export function buildApiWallpaper(wallpaper: GramJs.TypeWallPaper): ApiWallpaper
   return {
     slug,
     document,
+    settings: {
+      ...wallpaper.settings,
+      backgroundColor: wallpaper.settings?.backgroundColor
+        ? numberToHexColor(wallpaper?.settings?.backgroundColor) : undefined,
+      secondBackgroundColor: wallpaper.settings?.secondBackgroundColor
+        ? numberToHexColor(wallpaper?.settings?.secondBackgroundColor) : undefined,
+      thirdBackgroundColor: wallpaper.settings?.thirdBackgroundColor
+        ? numberToHexColor(wallpaper?.settings?.thirdBackgroundColor) : undefined,
+      fourthBackgroundColor: wallpaper.settings?.fourthBackgroundColor
+        ? numberToHexColor(wallpaper?.settings?.fourthBackgroundColor) : undefined,
+    },
   };
 }
 

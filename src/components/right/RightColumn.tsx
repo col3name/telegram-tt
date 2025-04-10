@@ -39,6 +39,7 @@ import MonetizationStatistics from './statistics/MonetizationStatistics';
 import Statistics from './statistics/Statistics.async';
 import StoryStatistics from './statistics/StoryStatistics.async';
 import StickerSearch from './StickerSearch.async';
+import CustomEmojiSearch from './CustomEmojiSearch.async';
 
 import './RightColumn.scss';
 
@@ -87,6 +88,7 @@ const RightColumn: FC<OwnProps & StateProps> = ({
   const {
     toggleChatInfo,
     toggleManagement,
+    setCustomEmojiSearchQuery,
     setStickerSearchQuery,
     setGifSearchQuery,
     closePollResults,
@@ -123,6 +125,7 @@ const RightColumn: FC<OwnProps & StateProps> = ({
   const isStoryStatistics = contentKey === RightColumnContent.StoryStatistics;
   const isBoostStatistics = contentKey === RightColumnContent.BoostStatistics;
   const isMonetizationStatistics = contentKey === RightColumnContent.MonetizationStatistics;
+  const isCustomEmojiSearch = contentKey === RightColumnContent.CustomEmojiSearch;
   const isStickerSearch = contentKey === RightColumnContent.StickerSearch;
   const isGifSearch = contentKey === RightColumnContent.GifSearch;
   const isPollResults = contentKey === RightColumnContent.PollResults;
@@ -202,6 +205,10 @@ const RightColumn: FC<OwnProps & StateProps> = ({
         break;
       case RightColumnContent.MonetizationStatistics:
         closeMonetizationStatistics();
+        break;
+      case RightColumnContent.CustomEmojiSearch:
+        blurSearchInput();
+        setCustomEmojiSearchQuery({ query: undefined });
         break;
       case RightColumnContent.StickerSearch:
         blurSearchInput();
@@ -341,6 +348,8 @@ const RightColumn: FC<OwnProps & StateProps> = ({
         return <MessageStatistics chatId={chatId!} isActive={isOpen && isActive} />;
       case RightColumnContent.StoryStatistics:
         return <StoryStatistics chatId={chatId!} isActive={isOpen && isActive} />;
+      case RightColumnContent.CustomEmojiSearch:
+        return <CustomEmojiSearch onClose={close} isActive={isOpen && isActive} />;
       case RightColumnContent.StickerSearch:
         return <StickerSearch onClose={close} isActive={isOpen && isActive} />;
       case RightColumnContent.GifSearch:
@@ -376,6 +385,7 @@ const RightColumn: FC<OwnProps & StateProps> = ({
           isMonetizationStatistics={isMonetizationStatistics}
           isMessageStatistics={isMessageStatistics}
           isStoryStatistics={isStoryStatistics}
+          isCustomEmojiSearch={isCustomEmojiSearch}
           isStickerSearch={isStickerSearch}
           isGifSearch={isGifSearch}
           isPollResults={isPollResults}

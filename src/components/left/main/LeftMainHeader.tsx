@@ -165,7 +165,10 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
         ripple={hasMenu && !isMobile}
         size="smaller"
         color="translucent"
-        className={isOpen ? 'active' : ''}
+        className={buildClassName(
+          'main-menu-btn',
+          isOpen && 'active',
+        )}
         // eslint-disable-next-line react/jsx-no-bind
         onClick={hasMenu ? onTrigger : () => onReset()}
         ariaLabel={hasMenu ? oldLang('AccDescrOpenMenu2') : 'Return to chat list'}

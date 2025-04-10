@@ -171,123 +171,147 @@ $icons-map: (
   "more": "\f186",
   "move-caption-down": "\f187",
   "move-caption-up": "\f188",
-  "mute": "\f189",
-  "muted": "\f18a",
-  "my-notes": "\f18b",
-  "new-chat-filled": "\f18c",
-  "next": "\f18d",
-  "nochannel": "\f18e",
-  "noise-suppression": "\f18f",
-  "non-contacts": "\f190",
-  "one-filled": "\f191",
-  "open-in-new-tab": "\f192",
-  "password-off": "\f193",
-  "pause": "\f194",
-  "permissions": "\f195",
-  "phone-discard-outline": "\f196",
-  "phone-discard": "\f197",
-  "phone": "\f198",
-  "photo": "\f199",
-  "pin-badge": "\f19a",
-  "pin-list": "\f19b",
-  "pin": "\f19c",
-  "pinned-chat": "\f19d",
-  "pinned-message": "\f19e",
-  "pip": "\f19f",
-  "play-story": "\f1a0",
-  "play": "\f1a1",
-  "poll": "\f1a2",
-  "previous": "\f1a3",
-  "privacy-policy": "\f1a4",
-  "quote-text": "\f1a5",
-  "quote": "\f1a6",
-  "readchats": "\f1a7",
-  "recent": "\f1a8",
-  "reload": "\f1a9",
-  "remove-quote": "\f1aa",
-  "remove": "\f1ab",
-  "reopen-topic": "\f1ac",
-  "replace": "\f1ad",
-  "replies": "\f1ae",
-  "reply-filled": "\f1af",
-  "reply": "\f1b0",
-  "revenue-split": "\f1b1",
-  "revote": "\f1b2",
-  "save-story": "\f1b3",
-  "saved-messages": "\f1b4",
-  "schedule": "\f1b5",
-  "search": "\f1b6",
-  "select": "\f1b7",
-  "send-outline": "\f1b8",
-  "send": "\f1b9",
-  "settings-filled": "\f1ba",
-  "settings": "\f1bb",
-  "share-filled": "\f1bc",
-  "share-screen-outlined": "\f1bd",
-  "share-screen-stop": "\f1be",
-  "share-screen": "\f1bf",
-  "show-message": "\f1c0",
-  "sidebar": "\f1c1",
-  "skip-next": "\f1c2",
-  "skip-previous": "\f1c3",
-  "smallscreen": "\f1c4",
-  "smile": "\f1c5",
-  "sort": "\f1c6",
-  "speaker-muted-story": "\f1c7",
-  "speaker-outline": "\f1c8",
-  "speaker-story": "\f1c9",
-  "speaker": "\f1ca",
-  "spoiler-disable": "\f1cb",
-  "spoiler": "\f1cc",
-  "sport": "\f1cd",
-  "star-filled": "\f1ce",
-  "star": "\f1cf",
-  "stars-lock": "\f1d0",
-  "stats": "\f1d1",
-  "stealth-future": "\f1d2",
-  "stealth-past": "\f1d3",
-  "stickers": "\f1d4",
-  "stop-raising-hand": "\f1d5",
-  "stop": "\f1d6",
-  "story-caption": "\f1d7",
-  "story-expired": "\f1d8",
-  "story-priority": "\f1d9",
-  "story-reply": "\f1da",
-  "strikethrough": "\f1db",
-  "tag-add": "\f1dc",
-  "tag-crossed": "\f1dd",
-  "tag-filter": "\f1de",
-  "tag-name": "\f1df",
-  "tag": "\f1e0",
-  "timer": "\f1e1",
-  "toncoin": "\f1e2",
-  "trade": "\f1e3",
-  "transcribe": "\f1e4",
-  "truck": "\f1e5",
-  "unarchive": "\f1e6",
-  "underlined": "\f1e7",
-  "unlock-badge": "\f1e8",
-  "unlock": "\f1e9",
-  "unmute": "\f1ea",
-  "unpin": "\f1eb",
-  "unread": "\f1ec",
-  "up": "\f1ed",
-  "user-filled": "\f1ee",
-  "user-online": "\f1ef",
-  "user": "\f1f0",
-  "video-outlined": "\f1f1",
-  "video-stop": "\f1f2",
-  "video": "\f1f3",
-  "view-once": "\f1f4",
-  "voice-chat": "\f1f5",
-  "volume-1": "\f1f6",
-  "volume-2": "\f1f7",
-  "volume-3": "\f1f8",
-  "web": "\f1f9",
-  "webapp": "\f1fa",
-  "word-wrap": "\f1fb",
-  "zoom-in": "\f1fc",
-  "zoom-out": "\f1fd",
+  "msg_emoji_activities2": "\f189",
+  "msg_emoji_angry": "\f18a",
+  "msg_emoji_away": "\f18b",
+  "msg_emoji_bath": "\f18c",
+  "msg_emoji_busy": "\f18d",
+  "msg_emoji_dislike": "\f18e",
+  "msg_emoji_food": "\f18f",
+  "msg_emoji_haha": "\f190",
+  "msg_emoji_happy": "\f191",
+  "msg_emoji_heart": "\f192",
+  "msg_emoji_hi2": "\f193",
+  "msg_emoji_home": "\f194",
+  "msg_emoji_like": "\f195",
+  "msg_emoji_neutral": "\f196",
+  "msg_emoji_omg": "\f197",
+  "msg_emoji_party": "\f198",
+  "msg_emoji_sad": "\f199",
+  "msg_emoji_sleep": "\f19a",
+  "msg_emoji_stickers": "\f19b",
+  "msg_emoji_study": "\f19c",
+  "msg_emoji_tongue": "\f19d",
+  "msg_emoji_vacation3": "\f19e",
+  "msg_emoji_what": "\f19f",
+  "msg_emoji_work": "\f1a0",
+  "mute": "\f1a1",
+  "muted": "\f1a2",
+  "my-notes": "\f1a3",
+  "new-chat-filled": "\f1a4",
+  "next": "\f1a5",
+  "nochannel": "\f1a6",
+  "noise-suppression": "\f1a7",
+  "non-contacts": "\f1a8",
+  "one-filled": "\f1a9",
+  "open-in-new-tab": "\f1aa",
+  "password-off": "\f1ab",
+  "pause": "\f1ac",
+  "permissions": "\f1ad",
+  "phone-discard-outline": "\f1ae",
+  "phone-discard": "\f1af",
+  "phone": "\f1b0",
+  "photo": "\f1b1",
+  "pin-badge": "\f1b2",
+  "pin-list": "\f1b3",
+  "pin": "\f1b4",
+  "pinned-chat": "\f1b5",
+  "pinned-message": "\f1b6",
+  "pip": "\f1b7",
+  "play-story": "\f1b8",
+  "play": "\f1b9",
+  "poll": "\f1ba",
+  "previous": "\f1bb",
+  "privacy-policy": "\f1bc",
+  "quote-text": "\f1bd",
+  "quote": "\f1be",
+  "readchats": "\f1bf",
+  "recent": "\f1c0",
+  "reload": "\f1c1",
+  "remove-quote": "\f1c2",
+  "remove": "\f1c3",
+  "reopen-topic": "\f1c4",
+  "replace": "\f1c5",
+  "replies": "\f1c6",
+  "reply-filled": "\f1c7",
+  "reply": "\f1c8",
+  "revenue-split": "\f1c9",
+  "revote": "\f1ca",
+  "save-story": "\f1cb",
+  "saved-messages": "\f1cc",
+  "schedule": "\f1cd",
+  "search": "\f1ce",
+  "select": "\f1cf",
+  "send-outline": "\f1d0",
+  "send": "\f1d1",
+  "settings-filled": "\f1d2",
+  "settings": "\f1d3",
+  "share-filled": "\f1d4",
+  "share-screen-outlined": "\f1d5",
+  "share-screen-stop": "\f1d6",
+  "share-screen": "\f1d7",
+  "show-message": "\f1d8",
+  "sidebar": "\f1d9",
+  "skip-next": "\f1da",
+  "skip-previous": "\f1db",
+  "smallscreen": "\f1dc",
+  "smile": "\f1dd",
+  "sort": "\f1de",
+  "speaker-muted-story": "\f1df",
+  "speaker-outline": "\f1e0",
+  "speaker-story": "\f1e1",
+  "speaker": "\f1e2",
+  "spoiler-disable": "\f1e3",
+  "spoiler": "\f1e4",
+  "sport": "\f1e5",
+  "star-filled": "\f1e6",
+  "star": "\f1e7",
+  "stars-lock": "\f1e8",
+  "stats": "\f1e9",
+  "stealth-future": "\f1ea",
+  "stealth-past": "\f1eb",
+  "stickers": "\f1ec",
+  "stop-raising-hand": "\f1ed",
+  "stop": "\f1ee",
+  "story-caption": "\f1ef",
+  "story-expired": "\f1f0",
+  "story-priority": "\f1f1",
+  "story-reply": "\f1f2",
+  "strikethrough": "\f1f3",
+  "tag-add": "\f1f4",
+  "tag-crossed": "\f1f5",
+  "tag-filter": "\f1f6",
+  "tag-name": "\f1f7",
+  "tag": "\f1f8",
+  "timer": "\f1f9",
+  "toncoin": "\f1fa",
+  "trade": "\f1fb",
+  "transcribe": "\f1fc",
+  "truck": "\f1fd",
+  "unarchive": "\f1fe",
+  "underlined": "\f1ff",
+  "unlock-badge": "\f200",
+  "unlock": "\f201",
+  "unmute": "\f202",
+  "unpin": "\f203",
+  "unread": "\f204",
+  "up": "\f205",
+  "user-filled": "\f206",
+  "user-online": "\f207",
+  "user": "\f208",
+  "video-outlined": "\f209",
+  "video-stop": "\f20a",
+  "video": "\f20b",
+  "view-once": "\f20c",
+  "voice-chat": "\f20d",
+  "volume-1": "\f20e",
+  "volume-2": "\f20f",
+  "volume-3": "\f210",
+  "web": "\f211",
+  "webapp": "\f212",
+  "word-wrap": "\f213",
+  "zoom-in": "\f214",
+  "zoom-out": "\f215",
 );
 
 .icon-active-sessions::before {
@@ -697,6 +721,78 @@ $icons-map: (
 }
 .icon-move-caption-up::before {
   content: map.get($icons-map, "move-caption-up");
+}
+.icon-msg_emoji_activities2::before {
+  content: map.get($icons-map, "msg_emoji_activities2");
+}
+.icon-msg_emoji_angry::before {
+  content: map.get($icons-map, "msg_emoji_angry");
+}
+.icon-msg_emoji_away::before {
+  content: map.get($icons-map, "msg_emoji_away");
+}
+.icon-msg_emoji_bath::before {
+  content: map.get($icons-map, "msg_emoji_bath");
+}
+.icon-msg_emoji_busy::before {
+  content: map.get($icons-map, "msg_emoji_busy");
+}
+.icon-msg_emoji_dislike::before {
+  content: map.get($icons-map, "msg_emoji_dislike");
+}
+.icon-msg_emoji_food::before {
+  content: map.get($icons-map, "msg_emoji_food");
+}
+.icon-msg_emoji_haha::before {
+  content: map.get($icons-map, "msg_emoji_haha");
+}
+.icon-msg_emoji_happy::before {
+  content: map.get($icons-map, "msg_emoji_happy");
+}
+.icon-msg_emoji_heart::before {
+  content: map.get($icons-map, "msg_emoji_heart");
+}
+.icon-msg_emoji_hi2::before {
+  content: map.get($icons-map, "msg_emoji_hi2");
+}
+.icon-msg_emoji_home::before {
+  content: map.get($icons-map, "msg_emoji_home");
+}
+.icon-msg_emoji_like::before {
+  content: map.get($icons-map, "msg_emoji_like");
+}
+.icon-msg_emoji_neutral::before {
+  content: map.get($icons-map, "msg_emoji_neutral");
+}
+.icon-msg_emoji_omg::before {
+  content: map.get($icons-map, "msg_emoji_omg");
+}
+.icon-msg_emoji_party::before {
+  content: map.get($icons-map, "msg_emoji_party");
+}
+.icon-msg_emoji_sad::before {
+  content: map.get($icons-map, "msg_emoji_sad");
+}
+.icon-msg_emoji_sleep::before {
+  content: map.get($icons-map, "msg_emoji_sleep");
+}
+.icon-msg_emoji_stickers::before {
+  content: map.get($icons-map, "msg_emoji_stickers");
+}
+.icon-msg_emoji_study::before {
+  content: map.get($icons-map, "msg_emoji_study");
+}
+.icon-msg_emoji_tongue::before {
+  content: map.get($icons-map, "msg_emoji_tongue");
+}
+.icon-msg_emoji_vacation3::before {
+  content: map.get($icons-map, "msg_emoji_vacation3");
+}
+.icon-msg_emoji_what::before {
+  content: map.get($icons-map, "msg_emoji_what");
+}
+.icon-msg_emoji_work::before {
+  content: map.get($icons-map, "msg_emoji_work");
 }
 .icon-mute::before {
   content: map.get($icons-map, "mute");

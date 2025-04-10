@@ -110,7 +110,6 @@ const SymbolMenuButtonNew: FC<OwnProps> = ({
     const triggerEl = triggerRef.current;
     if (!triggerEl) return;
     const rect = triggerEl.getBoundingClientRect();
-    console.log({triggerEl});
     if (rect?.x && rect?.y) {
       const { x, y } = rect;
       setContextMenuAnchor({ x, y });
@@ -191,6 +190,7 @@ const SymbolMenuButtonNew: FC<OwnProps> = ({
         idPrefix={idPrefix}
         onLoad={onSymbolMenuLoadingComplete}
         onClose={closeSymbolMenu}
+        // onClose={() => {}}
         onEmojiSelect={onEmojiSelect}
         onStickerSelect={onStickerSelect}
         onCustomEmojiSelect={onCustomEmojiSelect}

@@ -58,12 +58,20 @@ $color-message-reaction-own-hover: #b5e0a4;
 $color-message-reaction-chosen-hover: #1a82ea;
 $color-message-reaction-chosen-hover-own: #3f9d4b;
 
+$color-esg-background: #e5efe3;
+$color-esg-input: #d7e5d6;
+$color-esg-emoji: #97a88e;
+$color-esg-emoji-active: #cbd9c2;
+
 $color-message-story-mention-from: #4ef390;
 $color-message-story-mention-to: #74bcff;
 
 :root {
   --color-background: #{$color-white};
-  --color-background-compact-menu: #FFFFFFBB;
+  //--color-background-compact-menu: #FFFFFFBB;
+  --color-background-compact-menu-esg: #E7EEDFFF;
+  --color-background-compact-menu: #E7EEDFFF;
+  --color-background-compact-menu-esg-search-input: #DEE8D9FF;
   --color-background-compact-menu-reactions: #FFFFFFEB;
   --color-background-compact-menu-hover: #000000B2;
   --color-background-menu-separator: #0000001a;
@@ -199,6 +207,12 @@ $color-message-story-mention-to: #74bcff;
   --stars-gradient: linear-gradient(90deg, #FFAA00 0%, #FFCD3A 100%);
 
   --color-heart: #ff3c32;
+
+  --color-esg-background: #{$color-esg-background};
+  --color-esg-input: #{$color-esg-input};
+  --color-esg-emoji: #{$color-esg-emoji};
+  --color-esg-emoji-active: #{$color-esg-emoji-active};
+  --color-esg-emoji-active-color: #556b49;
 
   --vh: 1vh;
 

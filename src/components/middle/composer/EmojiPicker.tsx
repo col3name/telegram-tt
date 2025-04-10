@@ -256,9 +256,7 @@ async function ensureEmojiData() {
     emojiDataPromise = import('emoji-data-ios/emoji-data.json');
     emojiRawData = (await emojiDataPromise).default;
 
-    const data = uncompressEmoji(emojiRawData);
-    console.log([data, emojiRawData]);
-    emojiData = data;
+    emojiData = uncompressEmoji(emojiRawData);
   }
 
   return emojiDataPromise;

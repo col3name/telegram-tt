@@ -1,7 +1,10 @@
-import type {ApiFormattedText} from '../api/types';
-import {ApiMessageEntityTypes} from '../api/types';
+import type { ApiFormattedText, ApiMessageEntity } from '../api/types';
+import { ApiMessageEntityTypes } from '../api/types';
 
-import { convertMarkdownIntoApiFormattedText } from './parseMarkdown';
+import {
+  convertMarkdownIntoApiFormattedText,
+  parseHtmlAsApiFormattedText,
+} from './parseMarkdown';
 
 export const ENTITY_CLASS_BY_NODE_NAME: Record<string, ApiMessageEntityTypes> = {
   B: ApiMessageEntityTypes.Bold,
@@ -21,7 +24,23 @@ export const ENTITY_CLASS_BY_NODE_NAME: Record<string, ApiMessageEntityTypes> = 
 export default function parseHtmlAsFormattedText(
   html: string, withMarkdownLinks = false, skipMarkdown = false,
 ): ApiFormattedText {
-  return convertMarkdownIntoApiFormattedText(html);
+  if (skipMarkdown) {
+    return parseHtmlAsApiFormattedText(html, withMarkdownLinks);
+  }
+  const result = parseHtmlAsApiFormattedText(html, withMarkdownLinks);
+  const apiFormattedText = convertMarkdownIntoApiFormattedText(result.text);
+  return {
+    text: apiFormattedText.text,
+    entities: mergeEntities(result.entities || [], apiFormattedText.entities || []),
+  };
+}
+
+function mergeEntities(lhs: ApiMessageEntity[], rhs: ApiMessageEntity[]): ApiMessageEntity[] {
+  const combined = [...lhs, ...rhs];
+
+  combined.sort((a, b) => a.offset - b.offset);
+
+  return combined;
 }
 
 export function fixImageContent(fragment: HTMLDivElement) {

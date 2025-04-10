@@ -13,7 +13,7 @@ import {
 import {
   selectCanManage,
   selectChat,
-  selectChatFullInfo,
+  selectChatFullInfo, selectCurrentCustomEmojiSearch,
   selectCurrentGifSearch,
   selectCurrentStickerSearch,
   selectIsChatWithSelf,
@@ -50,6 +50,7 @@ type OwnProps = {
   isMessageStatistics?: boolean;
   isMonetizationStatistics?: boolean;
   isStoryStatistics?: boolean;
+  isCustomEmojiSearch?: boolean;
   isStickerSearch?: boolean;
   isGifSearch?: boolean;
   isPollResults?: boolean;
@@ -69,6 +70,7 @@ type StateProps = {
   isChannel?: boolean;
   userId?: string;
   isSelf?: boolean;
+  customEmojiSearchQuery?: string;
   stickerSearchQuery?: string;
   gifSearchQuery?: string;
   isEditingInvite?: boolean;
@@ -110,6 +112,7 @@ enum HeaderContent {
   ManageGroupNewAdminRights,
   ManageGroupMembers,
   ManageGroupAddAdmins,
+  CustomEmojiSearch,
   StickerSearch,
   GifSearch,
   PollResults,
@@ -135,6 +138,7 @@ const RightHeader: FC<OwnProps & StateProps> = ({
   isStoryStatistics,
   isMonetizationStatistics,
   isBoostStatistics,
+  isCustomEmojiSearch,
   isStickerSearch,
   isGifSearch,
   isPollResults,
@@ -148,6 +152,7 @@ const RightHeader: FC<OwnProps & StateProps> = ({
   isSelf,
   canManage,
   isChannel,
+  customEmojiSearchQuery,
   stickerSearchQuery,
   gifSearchQuery,
   isEditingInvite,
@@ -163,6 +168,7 @@ const RightHeader: FC<OwnProps & StateProps> = ({
   canEditBot,
 }) => {
   const {
+    setCustomEmojiSearchQuery,
     setStickerSearchQuery,
     setGifSearchQuery,
     toggleManagement,
@@ -187,6 +193,10 @@ const RightHeader: FC<OwnProps & StateProps> = ({
     deleteExportedChatInvite({ chatId: chatId!, link: currentInviteInfo!.link });
     onScreenSelect(ManagementScreens.Invites);
     closeDeleteDialog();
+  });
+
+  const handleCustomEmojiSearchQueryChange = useLastCallback((query: string) => {
+    setCustomEmojiSearchQuery({ query });
   });
 
   const handleStickerSearchQueryChange = useLastCallback((query: string) => {
@@ -241,6 +251,8 @@ const RightHeader: FC<OwnProps & StateProps> = ({
     ) : -1 // Never reached
   ) : isPollResults ? (
     HeaderContent.PollResults
+  ) : isCustomEmojiSearch ? (
+    HeaderContent.CustomEmojiSearch
   ) : isStickerSearch ? (
     HeaderContent.StickerSearch
   ) : isGifSearch ? (
@@ -410,6 +422,15 @@ const RightHeader: FC<OwnProps & StateProps> = ({
         return <h3 className="title">{isChannel ? lang('SubscribeRequests') : lang('MemberRequests')}</h3>;
       case HeaderContent.ManageGroupAddAdmins:
         return <h3 className="title">{lang('Channel.Management.AddModerator')}</h3>;
+      case HeaderContent.CustomEmojiSearch:
+        return (
+          <SearchInput
+            value={customEmojiSearchQuery}
+            placeholder={lang('Search')}
+            autoFocusSearch
+            onChange={handleCustomEmojiSearchQueryChange}
+          />
+        );
       case HeaderContent.StickerSearch:
         return (
           <SearchInput
@@ -577,6 +598,7 @@ export default withGlobal<OwnProps>(
     chatId, isProfile, isManagement, threadId,
   }): StateProps => {
     const tabState = selectTabState(global);
+    const { query: customEmojiSearchQuery } = selectCurrentCustomEmojiSearch(global) || {};
     const { query: stickerSearchQuery } = selectCurrentStickerSearch(global) || {};
     const { query: gifSearchQuery } = selectCurrentGifSearch(global) || {};
     const chat = chatId ? selectChat(global, chatId) : undefined;
@@ -609,6 +631,7 @@ export default withGlobal<OwnProps>(
       canEditTopic,
       userId: user?.id,
       isSelf: user?.isSelf,
+      customEmojiSearchQuery,
       stickerSearchQuery,
       gifSearchQuery,
       isEditingInvite,

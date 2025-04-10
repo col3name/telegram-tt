@@ -24,8 +24,8 @@
   flex: 1;
   background: var(--color-background);
   min-width: 16rem;
-  width: 33vw;
-  max-width: 26.5rem;
+  width: calc(33vw + 85px);
+  max-width: calc(26.5rem + 85px);
   height: 100%;
 
   @media (min-width: 926px) {
@@ -33,8 +33,8 @@
   }
 
   @media (min-width: 1276px) {
-    width: 25vw;
-    max-width: 33vw;
+    width: calc(25vw + 85px);
+    max-width: calc(33vw + 85px);
   }
 
   @media (max-width: 1275px) {
@@ -42,7 +42,7 @@
   }
 
   @media (max-width: 925px) {
-    width: 26.5rem !important;
+    width: calc(26.5rem + 85px) !important;
   }
 
   @media (max-width: 600px) {

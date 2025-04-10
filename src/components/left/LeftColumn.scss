@@ -16,10 +16,16 @@
   background-color: var(--color-background);
 
   .Button {
-    display: none;
+    &.main-menu-btn,
+    &.go-back {
+      display: none;
+    }
 
     @media (max-width: 925px) {
-      display: flex;
+      &.main-menu-btn,
+      &.go-back {
+        display: flex;
+      }
     }
   }
 

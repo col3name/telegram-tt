@@ -112,6 +112,7 @@ const UiLoader: FC<OwnProps & StateProps> = ({
     shouldRender: shouldRenderMask, transitionClassNames,
   } = useShowTransitionDeprecated(!isReady, undefined, true);
 
+  // const shouldRenderMask = true;
   useEffectOnce(() => {
     let timeout: number | undefined;
 
@@ -154,7 +155,7 @@ const UiLoader: FC<OwnProps & StateProps> = ({
             <div className={styles.main}>
               <div
                 className={styles.left}
-                style={leftColumnWidth ? `width: ${leftColumnWidth}px` : undefined}
+                style={leftColumnWidth ? `width: ${leftColumnWidth + 85}px` : undefined}
               />
               <div className={buildClassName(styles.middle, appStyles.bg)} />
               {isRightColumnShown && <div className={styles.right} />}

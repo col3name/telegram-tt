@@ -13,9 +13,10 @@ type OwnProps = {
   activeTab: SymbolMenuTabs;
   onSwitchTab: (tab: SymbolMenuTabs) => void;
   onRemoveSymbol: () => void;
-  onSearchOpen: (type: 'stickers' | 'gifs') => void;
+  onSearchOpen: (type: 'stickers' | 'gifs' | 'customEmoji') => void;
   isAttachmentModal?: boolean;
   canSendPlainText?: boolean;
+  canEmoji?: boolean;
   canSearch?: boolean;
 };
 
@@ -35,14 +36,15 @@ export const SYMBOL_MENU_TAB_TITLES: Record<SymbolMenuTabs, string> = {
 
 const SYMBOL_MENU_TAB_ICONS = {
   [SymbolMenuTabs.Emoji]: 'icon-smile',
-  [SymbolMenuTabs.CustomEmoji]: 'icon-favorite',
-  [SymbolMenuTabs.Stickers]: 'icon-stickers',
+  [SymbolMenuTabs.CustomEmoji]: 'icon-smile',
+  // [SymbolMenuTabs.CustomEmoji]: 'icon-favorite',
+  [SymbolMenuTabs.Stickers]: 'icon-msg_emoji_stickers',
   [SymbolMenuTabs.GIFs]: 'icon-gifs',
 };
 
 const SymbolMenuFooter: FC<OwnProps> = ({
   activeTab, onSwitchTab, onRemoveSymbol, onSearchOpen, isAttachmentModal,
-  canSendPlainText, canSearch,
+  canSendPlainText, canEmoji, canSearch,
 }) => {
   const lang = useOldLang();
 
@@ -63,6 +65,10 @@ const SymbolMenuFooter: FC<OwnProps> = ({
   }
 
   const handleSearchOpen = useLastCallback(() => {
+    if (activeTab === SymbolMenuTabs.CustomEmoji) {
+      onSearchOpen('customEmoji');
+      return;
+    }
     onSearchOpen(activeTab === SymbolMenuTabs.Stickers ? 'stickers' : 'gifs');
   });
 
@@ -70,9 +76,16 @@ const SymbolMenuFooter: FC<OwnProps> = ({
     event.stopPropagation();
   }
 
+  let showEmoji = canSendPlainText && canEmoji;
+  let showCustomEmoji = canSendPlainText;
+  let showStickerAndGif = !isAttachmentModal;
+  if (showCustomEmoji && !showEmoji && !showStickerAndGif) {
+    return undefined;
+  }
+
   return (
     <div className="SymbolMenu-footer" onClick={stopPropagation} dir={lang.isRtl ? 'rtl' : undefined}>
-      {activeTab !== SymbolMenuTabs.Emoji && activeTab !== SymbolMenuTabs.CustomEmoji && canSearch && (
+      {activeTab !== SymbolMenuTabs.Emoji && canSearch && (
         <Button
           className="symbol-search-button"
           ariaLabel={activeTab === SymbolMenuTabs.Stickers ? 'Search Stickers' : 'Search GIFs'}
@@ -85,10 +98,10 @@ const SymbolMenuFooter: FC<OwnProps> = ({
         </Button>
       )}
 
-      {canSendPlainText && renderTabButton(SymbolMenuTabs.Emoji)}
-      {canSendPlainText && renderTabButton(SymbolMenuTabs.CustomEmoji)}
-      {!isAttachmentModal && renderTabButton(SymbolMenuTabs.Stickers)}
-      {!isAttachmentModal && renderTabButton(SymbolMenuTabs.GIFs)}
+      {showEmoji && renderTabButton(SymbolMenuTabs.Emoji)}
+      {showCustomEmoji && renderTabButton(SymbolMenuTabs.CustomEmoji)}
+      {showStickerAndGif && renderTabButton(SymbolMenuTabs.Stickers)}
+      {showStickerAndGif && renderTabButton(SymbolMenuTabs.GIFs)}
 
       {(activeTab === SymbolMenuTabs.Emoji || activeTab === SymbolMenuTabs.CustomEmoji) && (
         <Button

@@ -1,5 +1,5 @@
 import type { ChangeEvent, RefObject } from 'react';
-import type { FC } from '../../../lib/teact/teact';
+import type {FC, TeactNode} from '../../../lib/teact/teact';
 import React, {
   getIsHeavyAnimating,
   memo, useEffect, useLayoutEffect,
@@ -25,6 +25,8 @@ import {
 } from '../../../util/windowEnvironment';
 import renderText from '../../common/helpers/renderText';
 import { isSelectionInsideInput } from './helpers/selection';
+import { renderTextWithEntities } from '../../common/helpers/renderTextWithEntities';
+import parseHtmlAsFormattedText from '../../../util/parseHtmlAsFormattedText';
 
 import useAppLayout from '../../../hooks/useAppLayout';
 import useDerivedState from '../../../hooks/useDerivedState';
@@ -50,6 +52,7 @@ type OwnProps = {
   ref?: RefObject<HTMLDivElement>;
   id: string;
   chatId: string;
+  children?: TeactNode;
   threadId: ThreadId;
   isAttachmentModalInput?: boolean;
   isStoryInput?: boolean;
@@ -75,6 +78,7 @@ type OwnProps = {
   onFocus?: NoneToVoidFunction;
   onBlur?: NoneToVoidFunction;
   isNeedPremium?: boolean;
+  isPreviewMode?: boolean;
 };
 
 type StateProps = {
@@ -109,6 +113,23 @@ function clearSelection() {
   }
 }
 
+
+type MessagePreviewProps = {
+  getHtml: Signal<string>;
+};
+
+const MessagePreview: FC<MessagePreviewProps> = ({
+                                                   getHtml,
+                                                 }) => {
+  const html = getHtml();
+
+  return (
+    <div className="form-control allow-selection touched">
+      {renderTextWithEntities(parseHtmlAsFormattedText(html))}
+    </div>
+  );
+};
+
 const MessageInput: FC<OwnProps & StateProps> = ({
   ref,
   id,
@@ -125,6 +146,7 @@ const MessageInput: FC<OwnProps & StateProps> = ({
   timedPlaceholderLangKey,
   timedPlaceholderDate,
   forcedPlaceholder,
+  children,
   canSendPlainText,
   canAutoFocus,
   noFocusInterception,
@@ -141,6 +163,7 @@ const MessageInput: FC<OwnProps & StateProps> = ({
   onFocus,
   onBlur,
   isNeedPremium,
+  isPreviewMode,
 }) => {
   const {
     editLastMessage,
@@ -558,6 +581,7 @@ const MessageInput: FC<OwnProps & StateProps> = ({
     'form-control allow-selection',
     isTouched && 'touched',
     shouldSuppressFocus && 'focus-disabled',
+    isPreviewMode && 'hidden',
   );
 
   const inputScrollerContentClass = buildClassName('input-scroller-content', isNeedPremium && 'is-need-premium');
@@ -570,6 +594,9 @@ const MessageInput: FC<OwnProps & StateProps> = ({
         onClick={!isAttachmentModalInput && !canSendPlainText ? handleClick : undefined}
       >
         <div className={inputScrollerContentClass}>
+          {isPreviewMode && (
+            <MessagePreview getHtml={getHtml} />
+          )}
           <div
             ref={inputRef}
             id={editableInputId || EDITABLE_INPUT_ID}

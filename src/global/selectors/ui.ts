@@ -51,9 +51,11 @@ export function selectRightColumnContentKey<T extends GlobalState>(
     RightColumnContent.BoostStatistics
   ) : tabState.monetizationStatistics ? (
     RightColumnContent.MonetizationStatistics
-  ) : tabState.stickerSearch.query !== undefined ? (
+  ) : (tabState.customEmojiSearch.onTab && tabState.customEmojiSearch.query !== undefined) ? (
+    RightColumnContent.CustomEmojiSearch
+  ) : (tabState.stickerSearch.onTab && tabState.stickerSearch.query !== undefined) ? (
     RightColumnContent.StickerSearch
-  ) : tabState.gifSearch.query !== undefined ? (
+  ) : (tabState.gifSearch.onTab && tabState.gifSearch.query !== undefined) ? (
     RightColumnContent.GifSearch
   ) : tabState.newChatMembersProgress !== NewChatMembersProgress.Closed ? (
     RightColumnContent.AddingMembers

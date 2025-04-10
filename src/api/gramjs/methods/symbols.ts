@@ -1,7 +1,8 @@
 import BigInt from 'big-integer';
-import { Api as GramJs } from '../../../lib/gramjs';
+import {Api, Api as GramJs} from '../../../lib/gramjs';
 
 import type {
+  ApiEmojiGroup,
   ApiSticker, ApiStickerSetInfo, ApiVideo,
 } from '../../types';
 
@@ -9,12 +10,14 @@ import { DEFAULT_GIF_SEARCH_BOT_USERNAME, RECENT_STATUS_LIMIT, RECENT_STICKERS_L
 import { buildVideoFromDocument } from '../apiBuilders/messageContent';
 import { buildApiEmojiStatus } from '../apiBuilders/peers';
 import {
-  buildStickerSet, buildStickerSetCovered, processStickerPackResult, processStickerResult,
+  buildStickerSet, buildStickerSetCovered, processEmojiGroupsResult, processStickerPackResult, processStickerResult,
 } from '../apiBuilders/symbols';
 import { buildInputDocument, buildInputStickerSet, buildInputStickerSetShortName } from '../gramjsBuilders';
 import localDb from '../localDb';
 import { sendApiUpdate } from '../updates/apiUpdateEmitter';
 import { invokeRequest } from './client';
+import TypeFoundStickers = Api.messages.TypeFoundStickers;
+import TypeEmojiGroups = Api.messages.TypeEmojiGroups;
 
 export async function fetchCustomEmojiSets({ hash = '0' }: { hash?: string }) {
   const allStickers = await invokeRequest(new GramJs.messages.GetEmojiStickers({ hash: BigInt(hash) }));
@@ -191,7 +194,6 @@ export async function fetchAnimatedEmojis() {
     stickerset: new GramJs.InputStickerSetAnimatedEmoji(),
   }));
 
-  // debugger;
   if (!(result instanceof GramJs.messages.StickerSet)) {
     return undefined;
   }
@@ -274,6 +276,63 @@ export async function fetchDefaultStatusEmojis() {
   return {
     set: buildStickerSet(result.set),
     stickers: processStickerResult(result.documents),
+  };
+}
+
+export async function searchStickersSet({ query, emoticon = undefined, hash = '0' }: { query: string; emoticon?: string, hash?: string }) {
+  const result: TypeFoundStickers | undefined = await invokeRequest(new GramJs.messages.SearchStickers({
+    q: query,
+    emoticon,
+    hash: BigInt(hash),
+  }));
+
+  if (!result || result instanceof GramJs.messages.FoundStickersNotModified) {
+    return undefined;
+  }
+
+  return {
+    hash: String(result.hash),
+    sets: processStickerResult(result.stickers),
+    // .map(buildStickerSetCovered),
+  };
+}
+
+export async function searchCustomEmojiGroup({ emojiGroup, hash = '0' }: { emojiGroup: ApiEmojiGroup; hash?: string }) {
+  const result = await invokeRequest(new GramJs.messages.SearchCustomEmoji({
+    emoticon: emojiGroup.emoticons?.join(' ') || '',
+    hash: BigInt(hash),
+  }));
+
+  if (!result || result instanceof Api.EmojiListNotModified) {
+    return undefined;
+  }
+
+  const emojis: any[] = [
+    ...result.documentId.map((documentId) => ({ documentId: documentId.toString(), emoticon: '' })),
+  ];
+  const emotions = emojiGroup.emoticons?.map((emoticon) => ({ emoticon }));
+  if (emotions) {
+    emojis.push(...emotions);
+  }
+  return {
+    hash: String(result.hash),
+    emojis,
+  };
+}
+
+export async function searchCustomEmojiStickers({ query, hash = '0' }: { query: string; hash?: string }) {
+  const result = await invokeRequest(new GramJs.messages.SearchEmojiStickerSets({
+    q: query,
+    hash: BigInt(hash),
+  }));
+
+  if (!result || result instanceof GramJs.messages.FoundStickerSetsNotModified) {
+    return undefined;
+  }
+
+  return {
+    hash: String(result.hash),
+    sets: result.sets.map(buildStickerSetCovered),
   };
 }
 
@@ -387,6 +446,23 @@ export async function searchGifs({
   return {
     nextOffset: result.nextOffset,
     gifs: processGifResult(documents),
+  };
+}
+
+export async function fetchEmojiGroups() {
+  const result: TypeEmojiGroups | undefined = await invokeRequest(new GramJs.messages.GetEmojiGroups({
+    hash: 0,
+  }));
+
+  if (!result || result instanceof GramJs.messages.EmojiGroupsNotModified) {
+    return {
+      groups: undefined,
+    };
+  }
+
+  const groups = processEmojiGroupsResult(result.groups);
+  return {
+    groups,
   };
 }
 

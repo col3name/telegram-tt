@@ -62,8 +62,21 @@ export interface ApiAttachment {
   ttlSeconds?: number;
 }
 
+export interface ApiWallPaperSettings {
+  blur?: boolean;
+  motion?: boolean;
+  backgroundColor?: string;
+  secondBackgroundColor?: string;
+  thirdBackgroundColor?: string;
+  fourthBackgroundColor?: string;
+  intensity?: number;
+  rotation?: number;
+  emoticon?: string;
+}
+
 export interface ApiWallpaper {
   slug: string;
+  settings?: ApiWallPaperSettings;
   document: ApiDocument;
 }
 

@@ -20,6 +20,7 @@ import {
   rebuildStickersForEmoji,
   replaceAnimatedEmojis,
   updateCustomEmojiForEmoji,
+  updateCustomEmojiSearch,
   updateCustomEmojiSets,
   updateGifSearch,
   updateRecentStatusCustomEmojis,
@@ -515,6 +516,19 @@ addActionHandler('loadEmojiKeywords', async (global, actions, payload): Promise<
   global = getGlobal();
   currentEmojiKeywords = global.emojiKeywords[language];
 
+  const emojiKeywordsMap = {} as Record<string, string[]>;
+  if (emojiKeywords?.keywords) {
+    Object.keys(emojiKeywords.keywords).forEach((keyword: string) => {
+      const emoticons: string[] = emojiKeywords.keywords[keyword];
+      emoticons?.forEach((emoticon: string) => {
+        if (!emojiKeywordsMap[emoticon]) {
+          emojiKeywordsMap[emoticon] = [keyword];
+        } else {
+          emojiKeywordsMap[emoticon].push(keyword);
+        }
+      });
+    });
+  }
   if (!emojiKeywords) {
     global = {
       ...global,
@@ -522,6 +536,7 @@ addActionHandler('loadEmojiKeywords', async (global, actions, payload): Promise<
         ...global.emojiKeywords,
         [language]: {
           ...currentEmojiKeywords,
+          keywordsToEmoji: emojiKeywordsMap,
           isLoading: false,
         },
       },
@@ -538,6 +553,7 @@ addActionHandler('loadEmojiKeywords', async (global, actions, payload): Promise<
       [language]: {
         isLoading: false,
         version: emojiKeywords.version,
+        keywordsToEmoji: emojiKeywordsMap,
         keywords: {
           ...(currentEmojiKeywords?.keywords),
           ...emojiKeywords.keywords,
@@ -615,12 +631,59 @@ async function loadStickers<T extends GlobalState>(
   setGlobal(global);
 }
 
+addActionHandler('setCustomEmojiGroupSearchQuery', (global, actions, payload): ActionReturnType => {
+  const { emojiGroup, tabId = getCurrentTabId(), onTab = true } = payload!;
+  if (!emojiGroup) {
+    return;
+  }
+  void searchThrottled(async () => {
+    const result = await callApi('searchCustomEmojiGroup', { emojiGroup });
+    if (!result) {
+      return;
+    }
+
+    global = getGlobal();
+    const { setsById, added } = global.stickers;
+
+    const stickerSetIds = result.emojis.map(({ documentId }: { documentId: any }) => documentId).filter(Boolean);
+    const sets: ApiStickerSet[] = [];
+    if (added.setIds) {
+      added.setIds.forEach((id) => {
+        if (!stickerSetIds.includes(id)) {
+          const apiStickerSet = setsById[id] || {};
+          if (apiStickerSet) {
+            sets.push(apiStickerSet);
+          }
+        }
+      });
+    }
+    global = updateCustomEmojiSets(
+      global,
+      result.hash,
+      sets,
+    );
+
+    global = updateCustomEmojiSearch(global, result.hash, stickerSetIds, '', emojiGroup, onTab, tabId);
+    setGlobal(global);
+  });
+});
+
+addActionHandler('setCustomEmojiSearchQuery', (global, actions, payload): ActionReturnType => {
+  const { query, tabId = getCurrentTabId(), onTab = true } = payload!;
+  if (query) {
+    const glbl = getGlobal();
+    const q = query?.toLocaleLowerCase?.()?.trim?.();
+    const result = updateCustomEmojiSearch(updateCustomEmojiSets(glbl, '0', []), '0', [], q, undefined, onTab, tabId);
+    setGlobal(result);
+  }
+});
+
 addActionHandler('setStickerSearchQuery', (global, actions, payload): ActionReturnType => {
-  const { query, tabId = getCurrentTabId() } = payload!;
+  const { query, tabId = getCurrentTabId(), onTab = true } = payload!;
 
   if (query) {
     void searchThrottled(async () => {
-      const result = await callApi('searchStickers', { query });
+      const result = await callApi('searchStickers', { query, });
       if (!result) {
         return;
       }
@@ -648,9 +711,11 @@ addActionHandler('setStickerSearchQuery', (global, actions, payload): ActionRetu
         result.sets,
       );
 
-      global = updateStickerSearch(global, result.hash, resultIds, tabId);
+      global = updateStickerSearch(global, result.hash, resultIds, query, onTab, tabId);
       setGlobal(global);
     });
+  } else {
+    global = updateStickerSearch(global, '', [], query, onTab, tabId);
   }
 });
 
@@ -675,6 +740,153 @@ addActionHandler('searchMoreGifs', (global, actions, payload): ActionReturnType 
       searchGifs(global, query, global.config?.gifSearchUsername, offset, tabId);
     });
   }
+});
+
+addActionHandler('fetchEmojiGroups', async (global, actions, payload): Promise<void> => {
+  global = getGlobal();
+  if (Array.isArray(global?.stickers?.effect?.emojiGroups) && global.stickers.effect.emojiGroups.length > 0) {
+    return;
+  }
+  const fetchedEmojiGroupes = await callApi('fetchEmojiGroups');
+
+  const groups = fetchedEmojiGroupes.groups;
+  if (groups && payload.premium) {
+    groups.push({
+      emoticons: ['📂⭐️'],
+      title: 'Premium',
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+      iconEmojiId: 5269590556232664327,
+    });
+  }
+
+  global = getGlobal();
+  let result = {
+    ...global,
+    stickers: {
+      ...global.stickers,
+      effect: {
+        ...global.stickers.effect,
+        emojiGroups: groups || [],
+      },
+    },
+  };
+  setGlobal(result);
+});
+
+addActionHandler('loadStickersForEmoji', (global, actions, payload): ActionReturnType => {
+  const { emoji } = payload;
+  const { hash } = global.stickers.forEmoji;
+
+  void searchThrottled(async () => {
+    global = getGlobal();
+    global = {
+      ...global,
+      stickers: {
+        ...global.stickers,
+        forEmoji: {
+          ...global.stickers.forEmoji,
+          emoji,
+        },
+      },
+    };
+
+    setGlobal(global);
+
+    const result = await callApi('fetchStickersForEmoji', { emoji, hash });
+
+    global = getGlobal();
+
+    if (!result || global.stickers.forEmoji.emoji !== emoji) {
+      return;
+    }
+
+    global = updateStickersForEmoji(global, emoji, result.stickers, result.hash);
+    global = getGlobal();
+    global = {
+      ...global,
+      stickers: {
+        ...global.stickers,
+        effect: {
+          ...global.stickers.effect,
+          stickers: result.stickers,
+        },
+      },
+    };
+    setGlobal(global);
+  });
+});
+
+addActionHandler('loadStickersForEmojiGroup', (global, actions, payload): ActionReturnType => {
+  const { emoji } = payload;
+  const { hash } = global.stickers.forEmoji;
+  global = getGlobal();
+  global = {
+    ...global,
+    stickers: {
+      ...global.stickers,
+      forEmoji: {
+        ...global.stickers.forEmoji,
+        emoji,
+      },
+      effect: {
+        ...global.stickers.effect,
+        group: payload.group,
+        isLoading: true,
+      },
+    },
+  };
+
+  setGlobal(global);
+  if (!payload.group) {
+    return;
+  }
+
+  void searchThrottled(async () => {
+    const result = await callApi('fetchStickersForEmoji', { emoji, hash });
+    global = getGlobal();
+
+    if (!result) {
+      global = {
+        ...global,
+        stickers: {
+          ...global.stickers,
+          effect: {
+            ...global.stickers.effect,
+            isLoading: false,
+          },
+        },
+      };
+      return;
+    }
+
+    global = getGlobal();
+    global = {
+      ...global,
+      stickers: {
+        ...global.stickers,
+        effect: {
+          ...global.stickers.effect,
+          stickers: result.stickers,
+          group: payload.group,
+          isLoading: false,
+        },
+      },
+    };
+    setGlobal(global);
+  });
+});
+
+addActionHandler('clearStickersForEmojiGroup', (global, actions, payload): ActionReturnType => {
+  setGlobal({
+    ...global,
+    stickers: {
+      ...global.stickers,
+      effect: {
+        ...global.stickers.effect,
+        group: undefined,
+      },
+    },
+  });
 });
 
 addActionHandler('loadStickersForEmoji', (global, actions, payload): ActionReturnType => {
@@ -801,5 +1013,6 @@ async function searchGifs<T extends GlobalState>(global: T, query: string, botUs
 
   global = getGlobal();
   global = updateGifSearch(global, !offset, result.gifs, result.nextOffset, tabId);
+  console.log('inline', global);
   setGlobal(global);
 }

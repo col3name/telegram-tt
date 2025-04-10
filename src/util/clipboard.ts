@@ -1,6 +1,8 @@
 import { DEBUG } from '../config';
+import type { ApiFormattedText } from '../api/types';
 
 export const CLIPBOARD_ITEM_SUPPORTED = window.navigator.clipboard && window.ClipboardItem;
+export const ATTR_PASSTED_API_FORMATTED_TEXT = 'data-entity-message';
 
 const textCopyEl = document.createElement('textarea');
 textCopyEl.setAttribute('readonly', '');
@@ -9,7 +11,6 @@ textCopyEl.className = 'visually-hidden';
 
 export const copyTextToClipboard = (str: string): void => {
   textCopyEl.value = str;
-  // debugger;
   document.body.appendChild(textCopyEl);
   const selection = document.getSelection();
 
@@ -28,17 +29,17 @@ export const copyTextToClipboard = (str: string): void => {
   document.body.removeChild(textCopyEl);
 };
 
-export const copyHtmlToClipboard = (html: string, text: string): void => {
+export const copyHtmlToClipboard = (html: string, text: string, formattedText: ApiFormattedText): void => {
   if (!window.navigator.clipboard?.write) {
     copyTextToClipboard(text);
     return;
   }
-
-  // debugger;
+  const json = JSON.stringify(formattedText);
+  const resultHtml = `<code ${ATTR_PASSTED_API_FORMATTED_TEXT}="1">${json}</code>${html}`;
   window.navigator.clipboard.write([
     new ClipboardItem({
       'text/plain': new Blob([text], { type: 'text/plain' }),
-      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/html': new Blob([resultHtml], { type: 'text/html' }),
     }),
   ]);
 };

@@ -131,7 +131,6 @@ const EmojiPickerNew: FC<OwnProps & StateProps> = ({
     setActiveCategoryIndex(minIntersectingIndex);
   });
 
-
   const canRenderContents = useAsyncRendering([], MENU_TRANSITION_DURATION);
   const shouldRenderContent = emojis && canRenderContents;
 
@@ -239,6 +238,7 @@ const EmojiPickerNew: FC<OwnProps & StateProps> = ({
     'EmojiPicker-header',
     !shouldHideTopBorder && 'with-top-border',
   );
+  let searchEmoji1 = searchEmoji(emojis, searchValue) as AllEmojis;
 
   return (
     <div className={containerClassName}>
@@ -281,16 +281,18 @@ const EmojiPickerNew: FC<OwnProps & StateProps> = ({
           })}
         </div>
 
-        {allCategories.map((category, i) => (
-          <EmojiCategory
-            category={category}
-            index={i}
-            allEmojis={searchEmoji(emojis, searchValue) as AllEmojis}
-            observeIntersection={observeIntersection}
-            shouldRender={activeCategoryIndex >= i - 1 && activeCategoryIndex <= i + 1}
-            onEmojiSelect={handleEmojiSelect}
-          />
-        ))}
+        {allCategories.map((category, i) => {
+          return (
+            <EmojiCategory
+              category={category}
+              index={i}
+              allEmojis={searchEmoji1}
+              observeIntersection={observeIntersection}
+              shouldRender={activeCategoryIndex >= i - 1 && activeCategoryIndex <= i + 1 && category.emojis.length > 0}
+              onEmojiSelect={handleEmojiSelect}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -301,9 +303,7 @@ async function ensureEmojiData() {
     emojiDataPromise = import('emoji-data-ios/emoji-data.json');
     emojiRawData = (await emojiDataPromise).default;
 
-    const data = uncompressEmoji(emojiRawData);
-    console.log([data, emojiRawData]);
-    emojiData = data;
+    emojiData = uncompressEmoji(emojiRawData);
   }
 
   return emojiDataPromise;

@@ -26,6 +26,13 @@ export function selectIsStickerFavorite<T extends GlobalState>(global: T, sticke
   return stickers && stickers.some(({ id }) => id === sticker.id);
 }
 
+export function selectCurrentCustomEmojiSearch<T extends GlobalState>(
+  global: T,
+  ...[tabId = getCurrentTabId()]: TabArgs<T>
+) {
+  return selectTabState(global, tabId).customEmojiSearch;
+}
+
 export function selectCurrentStickerSearch<T extends GlobalState>(
   global: T,
   ...[tabId = getCurrentTabId()]: TabArgs<T>

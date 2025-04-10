@@ -30,6 +30,10 @@
 
   .form-control {
     --border-width: 0;
+
+    &.hidden {
+      display: none;
+    }
   }
 
   .effect-icon {
@@ -406,6 +410,15 @@
     margin: 0;
     padding: 0;
     align-self: flex-end;
+
+    &.TopRight {
+      position: absolute;
+      top: -2.6rem;
+      left: 0;
+      width: 2.5rem;
+      background: white !important;
+      height: 2.5rem;
+    }
 
     &:not(.faded):not(.activated) {
       color: var(--color-composer-button);

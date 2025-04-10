@@ -83,6 +83,7 @@ const SymbolMenuButton: FC<OwnProps> = ({
   closeSendAsMenu,
 }) => {
   const {
+    setCustomEmojiSearchQuery,
     setStickerSearchQuery,
     setGifSearchQuery,
     addRecentEmoji,
@@ -110,20 +111,32 @@ const SymbolMenuButton: FC<OwnProps> = ({
     const triggerEl = triggerRef.current;
     if (!triggerEl) return;
     const rect = triggerEl.getBoundingClientRect();
-    // console.log({triggerEl});
     if (rect?.x && rect?.y) {
       const { x, y } = rect;
       setContextMenuAnchor({ x, y });
     }
   });
 
-  const handleSearchOpen = useLastCallback((type: 'stickers' | 'gifs') => {
-    if (type === 'stickers') {
-      setStickerSearchQuery({ query: '' });
-      setGifSearchQuery({ query: undefined });
-    } else {
-      setGifSearchQuery({ query: '' });
-      setStickerSearchQuery({ query: undefined });
+  const handleSearchOpen = useLastCallback((type: 'stickers' | 'gifs' | 'customEmoji') => {
+    switch (type) {
+      case 'customEmoji': {
+        setCustomEmojiSearchQuery({ query: '' });
+        setStickerSearchQuery({ query: undefined });
+        setGifSearchQuery({ query: undefined });
+        break;
+      }
+      case 'stickers': {
+        setStickerSearchQuery({ query: '' });
+        setGifSearchQuery({ query: undefined });
+        setCustomEmojiSearchQuery({ query: undefined });
+        break;
+      }
+      case 'gifs': {
+        setGifSearchQuery({ query: '' });
+        setStickerSearchQuery({ query: undefined });
+        setCustomEmojiSearchQuery({ query: undefined });
+        break;
+      }
     }
   });
 
@@ -171,7 +184,6 @@ const SymbolMenuButton: FC<OwnProps> = ({
           onActivate={handleActivateSymbolMenu}
           ariaLabel="Choose emoji, sticker or GIF"
         >
-          {/*smile*/}
           <div ref={triggerRef} className="symbol-menu-trigger" />
           { children ? (
             children

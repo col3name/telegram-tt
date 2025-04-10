@@ -1,6 +1,6 @@
 import { getGlobal } from '../../../global';
 
-import type { ApiMessage, ApiSponsoredMessage } from '../../../api/types';
+import type { ApiFormattedText, ApiMessage, ApiSponsoredMessage } from '../../../api/types';
 import type { OldLangFn } from '../../../hooks/useOldLang';
 import type { TextPart } from '../../../types';
 import { ApiMessageEntityTypes } from '../../../api/types';
@@ -61,6 +61,21 @@ export function renderMessageText({
     isProtected,
     forcePlayback,
   });
+}
+
+export function getMessageApiFormattedText(message: ApiMessage) {
+  const { text, entities } = message.content.text || {};
+
+  if (!text) {
+    const contentNotSupportedText = getMessageText(message);
+    return contentNotSupportedText ? (
+      { text: trimText(contentNotSupportedText), entities: [] }
+    ) : ({ text: '', entities: [] });
+  }
+
+  return {
+    text, entities,
+  } as ApiFormattedText;
 }
 
 // TODO Use Message Summary component instead

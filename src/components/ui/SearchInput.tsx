@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { FC } from '../../lib/teact/teact';
+import type {FC, TeactNode} from '../../lib/teact/teact';
 import React, {
   memo, useEffect, useRef,
 } from '../../lib/teact/teact';
@@ -21,6 +21,7 @@ import './SearchInput.scss';
 
 type OwnProps = {
   ref?: RefObject<HTMLInputElement>;
+  containerRef?: RefObject<HTMLDivElement>;
   children?: React.ReactNode;
   resultsItemSelector?: string;
   className?: string;
@@ -45,13 +46,16 @@ type OwnProps = {
   onFocus?: NoneToVoidFunction;
   onBlur?: NoneToVoidFunction;
   onClick?: NoneToVoidFunction;
+  onScroll?: (event?: React.UIEvent) => void;
   onUpClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onDownClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onSpinnerClick?: NoneToVoidFunction;
+  renderItems?: () => TeactNode | undefined;
 };
 
 const SearchInput: FC<OwnProps> = ({
   ref,
+  containerRef,
   children,
   resultsItemSelector,
   value,
@@ -77,8 +81,10 @@ const SearchInput: FC<OwnProps> = ({
   onBlur,
   onClick,
   onUpClick,
+  onScroll,
   onDownClick,
   onSpinnerClick,
+  renderItems,
 }) => {
   // eslint-disable-next-line no-null/no-null
   let inputRef = useRef<HTMLInputElement>(null);
@@ -138,11 +144,18 @@ const SearchInput: FC<OwnProps> = ({
     }
   });
 
+  const onBackClick = useLastCallback(() => {
+    // containerRef?.current?.scrollTo?.({ left: 0, behavior: 'smooth' });
+    onReset?.();
+    // inputRef.current?.focus?.();
+  });
   return (
     <div
+      ref={containerRef}
       className={buildClassName('SearchInput', className, isInputFocused && 'has-focus')}
       onClick={onClick}
       dir={oldLang.isRtl ? 'rtl' : undefined}
+      onScroll={onScroll}
     >
       <Transition
         name="fade"
@@ -154,7 +167,7 @@ const SearchInput: FC<OwnProps> = ({
         {isLoading && !withBackIcon ? (
           <Loading color={spinnerColor} backgroundColor={spinnerBackgroundColor} onClick={onSpinnerClick} />
         ) : withBackIcon ? (
-          <Icon name="arrow-left" className="back-icon" onClick={onReset} />
+          <Icon name="arrow-left" className="back-icon" onClick={onBackClick} />
         ) : (
           <Icon name="search" className="search-icon" />
         )}
@@ -165,6 +178,7 @@ const SearchInput: FC<OwnProps> = ({
         id={inputId}
         type="text"
         dir="auto"
+        style={canClose ? 'max-width: 80%' : undefined}
         placeholder={placeholder || oldLang('Search')}
         className="form-control"
         value={value}
@@ -222,6 +236,9 @@ const SearchInput: FC<OwnProps> = ({
           )
         )}
       </Transition>
+      <div>
+        {renderItems && renderItems()}
+      </div>
     </div>
   );
 };

@@ -287,6 +287,7 @@ const SettingsHeader: FC<OwnProps> = ({
   return (
     <div className="left-header">
       <Button
+        className="go-back"
         round
         size="smaller"
         color="translucent"

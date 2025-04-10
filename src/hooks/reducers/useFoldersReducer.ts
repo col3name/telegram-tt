@@ -7,6 +7,7 @@ import type { Dispatch, StateReducer } from '../useReducer';
 import { selectChat } from '../../global/selectors';
 import { omit, pick } from '../../util/iteratees';
 import useReducer from '../useReducer';
+import { removeEmoji } from '../../util/emoji/removeEmoji';
 
 export type FolderChatType = {
   icon: IconName;
@@ -141,7 +142,7 @@ export const FOLDER_ICONS = {
   FOLDER: '📁',
 } as const;
 
-export const FOLDER_ICONS_LIST= Object.values(FOLDER_ICONS);
+export const FOLDER_ICONS_LIST = Object.values(FOLDER_ICONS);
 
 const foldersReducer: StateReducer<FoldersState, FoldersActions> = (
   state,
@@ -153,29 +154,36 @@ const foldersReducer: StateReducer<FoldersState, FoldersActions> = (
         ...state,
         folder: {
           ...state.folder,
-          title: { ...state.folder.title, entities: [action.payload] },
+          emoticon: undefined,
+          title: {
+            ...state.folder.title,
+            text: action.payload.emoji + removeEmoji(state.folder.title.text.trim()),
+            entities: [action.payload.customEmoji],
+          },
         },
         isTouched: true,
       };
-    case 'setTitle':
+    case 'setTitle': {
+      const onlyText = action.payload.onlyText;
+      const emoticon = onlyText ? state.folder.emoticon : (action.payload.emoticon || undefined);
       return {
         ...state,
         folder: {
           ...state.folder,
           title: {
-            text:
-              Object.values(FOLDER_ICONS).includes(action.payload.emoticon)
-                ? state.folder.title.text
-                : `${action.payload.title.text}${action.payload.emoticon}`,
-            ...action.payload.title,
-            entities: action.payload.document ? [
+            text: onlyText ? action.payload.title.trim() :
+              Object.values(FOLDER_ICONS).includes(emoticon)
+                ? removeEmoji(state.folder.title.text.trim())
+                : `${action.payload.title.trim()}${emoticon || ''}`,
+            entities: onlyText ? state.folder.title.entities : action.payload.document ? [
               action.payload.document,
             ] : undefined,
           },
-          emoticon: action.payload.emoticon,
+          emoticon: emoticon || FOLDER_ICONS.FOLDER,
         },
         isTouched: true,
       };
+    }
     case 'setFolderId':
       return {
         ...state,

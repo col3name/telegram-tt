@@ -1,4 +1,4 @@
-import type { ApiMessage } from '../../../api/types';
+import type { ApiFormattedText, ApiMessage, ApiMessageEntity } from '../../../api/types';
 import type {
   ActionReturnType,
   GlobalState,
@@ -12,6 +12,7 @@ import {
   SCROLL_MAX_DURATION,
   SERVICE_NOTIFICATIONS_USER_ID,
 } from '../../../config';
+import { getMessageApiFormattedText } from '../../../components/common/helpers/renderMessageText';
 import { cancelScrollBlockingAnimation, isAnimatingScroll } from '../../../util/animateScroll';
 import { copyHtmlToClipboard } from '../../../util/clipboard';
 import { getCurrentTabId } from '../../../util/establishMultitabRole';
@@ -1016,14 +1017,22 @@ function copyTextForMessages(global: GlobalState, chatId: string, messageIds: nu
     .map((id) => chatMessages[id])
     .filter((message) => selectAllowedMessageActionsSlow(global, message, threadId).canCopy)
     .sort((message1, message2) => message1.id - message2.id);
-
   const resultHtml: string[] = [];
   const resultText: string[] = [];
 
+  const summaryMessageText: ApiFormattedText = { text: '', entities: [] };
   messages.forEach((message) => {
     const sender = isChatChannel(chat) ? chat : selectSender(global, message);
     const senderTitle = `> ${sender ? getPeerTitle(lang, sender) : message.forwardInfo?.hiddenUserName || ''}:`;
     const statefulContent = getMessageStatefulContent(global, message);
+
+    const { text, entities } = getMessageApiFormattedText(message);
+    summaryMessageText.text += `${senderTitle}\n${text}`;
+    const offset = summaryMessageText.text.length;
+    summaryMessageText.entities = entities?.map((it: ApiMessageEntity) => ({
+      ...it,
+      offset: it.offset + offset,
+    }));
 
     resultHtml.push(senderTitle);
     resultHtml.push(`${renderMessageSummaryHtml(lang, message)}\n`);
@@ -1031,10 +1040,7 @@ function copyTextForMessages(global: GlobalState, chatId: string, messageIds: nu
     resultText.push(senderTitle);
     resultText.push(`${getMessageSummaryText(lang, message, statefulContent, false, 0, true)}\n`);
   });
-
-  // debugger;
-  console.log('CopyHtmlToClipboard', { resultHtml, messages });
-  copyHtmlToClipboard(resultHtml.join('\n'), resultText.join('\n'));
+  copyHtmlToClipboard(resultHtml.join('\n'), resultText.join('\n'), summaryMessageText);
 }
 
 addActionHandler('openDeleteMessageModal', (global, actions, payload): ActionReturnType => {

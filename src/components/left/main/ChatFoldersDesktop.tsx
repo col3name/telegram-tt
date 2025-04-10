@@ -134,7 +134,7 @@ const ChatFolder: FC<ChatFolderProps> = ({
 
   const { handleClick, handleMouseDown } = useFastClick((e: React.MouseEvent<HTMLDivElement>) => {
     if (contextActions && (e.button === MouseButton.Secondary || !onClick)) {
-      // handleBeforeContextMenu(e);
+      handleBeforeContextMenu(e);
     }
 
     if (e.type === 'mousedown' && e.button !== MouseButton.Main) {
@@ -155,11 +155,6 @@ const ChatFolder: FC<ChatFolderProps> = ({
   );
 
   const iconSize = 40;
-  // console.log(folder)
-  // const isAllChat = ALL_FOLDER_ID === folder.id;
-  // const isPersonalChat = PERSONAL_FOLDER_ID === folder.id;
-
-  // const customFolderIconName = isAllChat ? 'chats' : isPersonalChat ? folder.emoticon ? getCustomFolderIconName(folder.emoticon) : 'group' : folder.emoticon ? getCustomFolderIconName(folder.emoticon) : 'folder-badge';
   return (
     <div
       ref={tabRef}
@@ -167,18 +162,7 @@ const ChatFolder: FC<ChatFolderProps> = ({
       onMouseDown={handleMouseDown}
       onContextMenu={handleContextMenu}
       className={[styles.Tab, onClick && styles.TabInteractive, active && styles.TabActive].join(' ')}
-      // className={buildClassName('Tab', onClick && 'Tab--interactive', className)}
-      // className={buildClassName('FolderTab', active && 'Tab--active', 'Tab--folder', className)}
     >
-      {/*{folder.emoticon === FOLDER_ICONS.BOT && (*/}
-      {/*  <>*/}
-      {/*    <Icon name="bot" />*/}
-      {/*    /!*<span>itsbot {folder.emoticon}</span>*!/*/}
-      {/*  </>*/}
-      {/*)}*/}
-      {/*{Object.keys(FOLDER_ICONS).includes(folder.emoticon) && (*/}
-      {/*  <span>dfd{folder.emoticon}</span>*/}
-      {/*)}*/}
       { folder.docId && (
         <CustomEmoji
           documentId={folder.docId}
@@ -207,7 +191,6 @@ const ChatFolder: FC<ChatFolderProps> = ({
 
       <span className={styles.Tab_inner}>
         {typeof folder.title === 'string' ? renderText(folder.title, ['emoji', 'hq_emoji', 'emoji_html']) : folder.title}
-        {/*{isBlocked && <Icon name="lock-badge" className="blocked" />}*/}
       </span>
 
       {Boolean(folder.badgeCount) && (
@@ -257,23 +240,16 @@ export function isCustomFolderIcon(emoticon: string): boolean {
 }
 
 const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
-  // hideFolder,
   chatFoldersById,
   orderedFolderIds,
   activeChatFolder,
   currentUserId,
   isForumPanelOpen,
-  // shouldSkipHistoryAnimations,
   maxFolders,
   maxChatLists,
-  // shouldHideFolderTabs,
   folderInvitesById,
   maxFolderInvites,
-  // hasArchivedChats,
-  // hasArchivedStories,
-  // archiveSettings,
   isStoryRibbonShown,
-  // sessions,
   content,
   onReset,
 }) => {
@@ -287,7 +263,6 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
     openLimitReachedModal,
   } = getActions();
 
-  // console.log({ chatFoldersById });
   // eslint-disable-next-line no-null/no-null
   const transitionRef = useRef<HTMLDivElement>(null);
 
@@ -299,15 +274,11 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
 
   const {
     ref,
-    shouldRender: shouldRenderStoryRibbon,
-    getIsClosing: getIsStoryRibbonClosing,
   } = useShowTransition({
     isOpen: isStoryRibbonShown,
     className: false,
     withShouldRender: true,
   });
-  // const isStoryRibbonClosing = useDerivedState(getIsStoryRibbonClosing);
-
   const allChatsFolder: ApiChatFolder = useMemo(() => {
     return {
       id: ALL_FOLDER_ID,
@@ -329,7 +300,6 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
       : undefined;
   }, [chatFoldersById, allChatsFolder, orderedFolderIds]);
 
-  // console.log({ chatFoldersById, allChatsFolder })
   const isInFirstFolder = FIRST_FOLDER_INDEX === activeChatFolder;
 
   const folderCountersById = useFolderManagerForUnreadCounters();
@@ -402,10 +372,6 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
       const titleIcon = getTitleIcon(title);
       const isCustomIcon = folder.emoticon ? isCustomFolderIcon(folder.emoticon) :  titleIcon?.[0] !== undefined ? false : true;
 
-      // console.log({isCustomIcon, em: folder.emoticon, title: folder.title.text, titleIcon: titleIcon?.[0]})
-      if (isCustomIcon && folder.emoticon) {
-        // debugger;
-      }
       if (
         title.text.includes('Yandex')
         // ||
@@ -541,15 +507,12 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
       ref={ref}
       className={buildClassName(
         styles.ChatFolders,
-        // shouldRenderFolders && shouldHideFolderTabs && 'ChatFolders--tabs-hidden',
       )}
     >
       {shouldRenderFolders ? (
         <div
           className={buildClassName(
             styles.ChatFoldersWrapper,
-            // 'ChatFoldersWrapper',
-            // shouldRenderFolders && shouldHideFolderTabs && 'ChatFoldersWrapper--tabs-hidden',
           )}
         >
           {folderTabs?.map((tab: TabWithProperties, i: number) => (
@@ -564,12 +527,6 @@ const ChatFoldersDesktop: FC<OwnProps & StateProps> = ({
             />
           ))}
         </div>
-        // <TabList
-        //   contextRootElementSelector="#LeftColumn"
-        //   tabs={folderTabs}
-        //   activeTab={activeChatFolder}
-        //   onSwitchTab={handleSwitchTab}
-        // />
       ) : shouldRenderPlaceholder ? (
         <div ref={placeholderRef} className="tabs-placeholder" />
       ) : undefined}
@@ -601,10 +558,9 @@ export default memo(withGlobal<OwnProps>(
       currentUserId,
       archiveSettings,
     } = global;
-    const { shouldSkipHistoryAnimations, activeChatFolder } = selectTabState(global);
+    const { activeChatFolder } = selectTabState(global);
     const { storyViewer: { isRibbonShown: isStoryRibbonShown } } = selectTabState(global);
 
-    // console.log({chatFoldersById, orderedFolderIds})
     return {
       ...ownProps,
       chatFoldersById,
@@ -612,7 +568,6 @@ export default memo(withGlobal<OwnProps>(
       orderedFolderIds,
       activeChatFolder,
       currentUserId,
-      // shouldSkipHistoryAnimations,
       hasArchivedChats: Boolean(archived?.length),
       hasArchivedStories: Boolean(archivedStories?.length),
       maxFolders: selectCurrentLimit(global, 'dialogFilters'),

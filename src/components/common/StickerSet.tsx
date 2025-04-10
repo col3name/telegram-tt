@@ -370,7 +370,6 @@ const StickerSet: FC<OwnProps> = ({
             const reactionId = sticker.isCustomEmoji ? sticker.id : sticker.emoji;
             const isSelected = reactionId ? selectedReactionIds?.includes(reactionId) : undefined;
 
-
             return (
               <StickerButton
                 key={sticker.id}
@@ -399,7 +398,10 @@ const StickerSet: FC<OwnProps> = ({
                 forcePlayback={forcePlayback}
                 isEffectEmoji={stickerSet.id === EFFECT_EMOJIS_SET_ID}
                 noShowPremium={isCurrentUserPremium
-                  && (stickerSet.id === EFFECT_STICKERS_SET_ID || stickerSet.id === EFFECT_EMOJIS_SET_ID)}
+                  && (
+                    // stickerSet.id === EFFECT_STICKERS_SET_ID ||
+                    stickerSet.id === EFFECT_EMOJIS_SET_ID
+                  )}
               />
             );
           })}

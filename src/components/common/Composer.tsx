@@ -1,6 +1,6 @@
 import type { FC } from '../../lib/teact/teact';
 import React, {
-  memo, useEffect, useMemo, useRef, useSignal, useState,
+  memo, useEffect, useMemo, useRef, useSignal, useState, useCallback,
 } from '../../lib/teact/teact';
 import { getActions, getGlobal, withGlobal } from '../../global';
 
@@ -180,6 +180,7 @@ type ComposerType = 'messageList' | 'story';
 
 type OwnProps = {
   type: ComposerType;
+  getBgSignalValue?: any;
   chatId: string;
   threadId: ThreadId;
   storyId?: number;
@@ -296,8 +297,11 @@ const SELECT_MODE_TRANSITION_MS = 200;
 const SENDING_ANIMATION_DURATION = 350;
 const MOUNT_ANIMATION_DURATION = 430;
 
+const noop = (value: string) => {};
+
 const Composer: FC<OwnProps & StateProps> = ({
   type,
+  getBgSignalValue,
   isOnActiveTab,
   dropAreaState,
   isInScheduledList,
@@ -423,6 +427,8 @@ const Composer: FC<OwnProps & StateProps> = ({
   const storyReactionRef = useRef<HTMLButtonElement>(null);
 
   const [getHtml, setHtml] = useSignal('');
+  const [isPreviewMode, enablePreviewMode, disablePreviewMode] = useFlag(false);
+
   const [isMounted, setIsMounted] = useState(false);
   const getSelectionRange = useGetSelectionRange(editableInputCssSelector);
   const lastMessageSendTimeSeconds = useRef<number>();
@@ -565,6 +571,14 @@ const Composer: FC<OwnProps & StateProps> = ({
     insertFormattedTextAndUpdateCursor(nextText, editableInputId);
     setNextText(undefined);
   });
+
+  const onTogglePreview = useCallback(() => {
+    if (isPreviewMode) {
+      disablePreviewMode();
+    } else {
+      enablePreviewMode();
+    }
+  }, [isPreviewMode, disablePreviewMode, enablePreviewMode]);
 
   const {
     shouldSuggestCompression,
@@ -754,7 +768,6 @@ const Composer: FC<OwnProps & StateProps> = ({
       setTimeout(() => closeSymbolMenu(), SENDING_ANIMATION_DURATION);
     } else {
       closeSymbolMenu();
-
     }
   });
 
@@ -1035,10 +1048,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     }
 
     const html = getHtml();
-    // const html = '**bold** and __italic__ and ://telegram.org [link](https://telegram.org) <b>bold2</b>';
-    // const html = '<code>`hello world`<code/><img alt="234124618726" data-document-id="234124618726" >';
     const { text, entities } = parseHtmlAsFormattedText(html);
-    // console.log('handleSend', html, { text, entities });
 
     if (currentAttachments.length) {
       sendAttachments({
@@ -1195,6 +1205,11 @@ const Composer: FC<OwnProps & StateProps> = ({
   const handleCustomEmojiSelectAttachmentModal = useLastCallback((emoji: ApiSticker) => {
     handleCustomEmojiSelect(emoji, EDITABLE_INPUT_MODAL_ID);
   });
+  const animateBackground = useLastCallback(() => {
+    if (getBgSignalValue() && typeof getBgSignalValue() === 'function') {
+      getBgSignalValue()?.();
+    }
+  });
 
   const handleGifSelect = useLastCallback((gif: ApiVideo, isSilent?: boolean, isScheduleRequested?: boolean) => {
     if (!currentMessageList && !storyId) {
@@ -1206,11 +1221,13 @@ const Composer: FC<OwnProps & StateProps> = ({
       requestCalendar((scheduledAt) => {
         cancelForceShowSymbolMenu();
         handleMessageSchedule({ gif, isSilent }, scheduledAt, currentMessageList!);
+        animateBackground?.();
         requestMeasure(() => {
           resetComposer(true);
         });
       });
     } else {
+      animateBackground?.();
       sendMessage({ messageList: currentMessageList, gif, isSilent });
       requestMeasure(() => {
         resetComposer(true);
@@ -1239,6 +1256,7 @@ const Composer: FC<OwnProps & StateProps> = ({
       requestCalendar((scheduledAt) => {
         cancelForceShowSymbolMenu();
         handleMessageSchedule({ sticker, isSilent }, scheduledAt, currentMessageList!);
+        animateBackground?.();
         requestMeasure(() => {
           resetComposer(shouldPreserveInput);
         });
@@ -1251,6 +1269,7 @@ const Composer: FC<OwnProps & StateProps> = ({
         shouldUpdateStickerSetOrder: shouldUpdateStickerSetOrder && canUpdateStickerSetsOrder,
       });
       clearDraft({ chatId, threadId, isLocalOnly: true });
+      animateBackground?.();
 
       requestMeasure(() => {
         resetComposer(shouldPreserveInput);
@@ -1305,6 +1324,7 @@ const Composer: FC<OwnProps & StateProps> = ({
       return;
     }
 
+    animateBackground();
     if (isInScheduledList) {
       requestCalendar((scheduledAt) => {
         handleMessageSchedule({ poll }, scheduledAt, currentMessageList);
@@ -1601,13 +1621,22 @@ const Composer: FC<OwnProps & StateProps> = ({
   const onSend = useMemo(() => {
     switch (mainButtonState) {
       case MainButtonState.Edit:
-        return handleEditComplete;
+        return () => {
+          handleEditComplete();
+          animateBackground();
+        };
       case MainButtonState.Schedule:
-        return handleSendScheduled;
+        return () => {
+          handleSendScheduled();
+          animateBackground();
+        };
       default:
-        return handleSend;
+        return () => {
+          handleSend();
+          animateBackground();
+        };
     }
-  }, [mainButtonState, handleEditComplete]);
+  }, [getBgSignalValue, mainButtonState, handleEditComplete]);
 
   const withBotCommands = isChatWithBot && botMenuButton?.type === 'commands' && !editingMessage
     && botCommands !== false && !activeVoiceRecording;
@@ -1642,6 +1671,7 @@ const Composer: FC<OwnProps & StateProps> = ({
         />
       )}
       <AttachmentModal
+        animateBackground={getBgSignalValue()}
         chatId={chatId}
         threadId={threadId}
         canShowCustomSendMenu={canShowCustomSendMenu}
@@ -1814,6 +1844,7 @@ const Composer: FC<OwnProps & StateProps> = ({
               isSymbolMenuOpen={isSymbolMenuOpen}
               openSymbolMenu={openSymbolMenu}
               closeSymbolMenu={closeSymbolMenu}
+              // closeSymbolMenu={() => {}}
               canSendStickers={canSendStickers}
               canSendGifs={canSendGifs}
               isMessageComposer={isInMessageList}
@@ -1857,13 +1888,26 @@ const Composer: FC<OwnProps & StateProps> = ({
             noFocusInterception={hasAttachments}
             shouldSuppressFocus={isMobile && isSymbolMenuOpen}
             shouldSuppressTextFormatter={isEmojiTooltipOpen || isMentionTooltipOpen || isInlineBotTooltipOpen}
-            onUpdate={setHtml}
+            onUpdate={isPreviewMode ? noop : setHtml}
             onSend={onSend}
             onSuppressedFocus={closeSymbolMenu}
             onFocus={markInputHasFocus}
             onBlur={unmarkInputHasFocus}
             isNeedPremium={isNeedPremium}
+            isPreviewMode={isPreviewMode}
           />
+          <Button
+            id="preview-menu-button"
+            className={buildClassName(
+              'TopRight',
+              isPreviewMode ? 'AttachMenu--button activated' : 'AttachMenu--button',
+            )}
+            round
+            color="translucent"
+            onClick={onTogglePreview}
+          >
+            <Icon name="channelviews" />
+          </Button>
           {isInMessageList && (
             <>
               {isInlineBotLoading && Boolean(inlineBotId) && (

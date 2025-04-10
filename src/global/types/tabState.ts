@@ -10,6 +10,7 @@ import type {
   ApiCheckedGiftCode,
   ApiCollectibleInfo,
   ApiContact,
+  ApiEmojiGroup,
   ApiError,
   ApiFormattedText,
   ApiGeoPoint,
@@ -104,11 +105,22 @@ export type TabState = {
   gifSearch: {
     query?: string;
     offset?: string;
+    onTab?: boolean;
+    group?: ApiEmojiGroup;
     results?: ApiVideo[];
+  };
+
+  customEmojiSearch: {
+    query?: string;
+    group?: ApiEmojiGroup;
+    onTab?: boolean;
+    hash?: string;
+    resultIds?: string[];
   };
 
   stickerSearch: {
     query?: string;
+    onTab?: boolean;
     hash?: string;
     resultIds?: string[];
   };

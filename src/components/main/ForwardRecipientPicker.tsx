@@ -21,6 +21,7 @@ import RecipientPicker from '../common/RecipientPicker';
 
 export type OwnProps = {
   isOpen: boolean;
+  getBgSignalValue?: any;
 };
 
 interface StateProps {
@@ -36,6 +37,7 @@ const ForwardRecipientPicker: FC<OwnProps & StateProps> = ({
   isManyMessages,
   isStory,
   isForwarding,
+  getBgSignalValue,
 }) => {
   const {
     openChatOrTopicWithReplyInDraft,
@@ -59,6 +61,7 @@ const ForwardRecipientPicker: FC<OwnProps & StateProps> = ({
   const handleSelectRecipient = useCallback((recipientId: string, threadId?: ThreadId) => {
     const isSelf = recipientId === currentUserId;
     if (isStory) {
+      getBgSignalValue()?.();
       forwardStory({ toChatId: recipientId });
       const global = getGlobal();
       if (isUserId(recipientId)) {
@@ -88,18 +91,20 @@ const ForwardRecipientPicker: FC<OwnProps & StateProps> = ({
           : 'Conversation.ForwardTooltip.SavedMessages.One',
       );
 
+      getBgSignalValue()?.();
       forwardToSavedMessages();
       showNotification({ message });
     } else {
       const chatId = recipientId;
       const topicId = threadId ? Number(threadId) : undefined;
       if (isForwarding) {
+        getBgSignalValue()?.();
         setForwardChatOrTopic({ chatId, topicId });
       } else {
         openChatOrTopicWithReplyInDraft({ chatId, topicId });
       }
     }
-  }, [currentUserId, isManyMessages, isStory, lang, isForwarding]);
+  }, [currentUserId, isStory, getBgSignalValue, lang, isManyMessages, isForwarding]);
 
   const handleClose = useCallback(() => {
     exitForwardMode();

@@ -1,4 +1,4 @@
-import type { FC } from '../../../lib/teact/teact';
+import {FC, useMemo} from '../../../lib/teact/teact';
 import React, { memo, useRef } from '../../../lib/teact/teact';
 
 import type { ObserveFn } from '../../../hooks/useIntersectionObserver';
@@ -51,6 +51,20 @@ const EmojiCategory: FC<OwnProps> = ({
   const height = Math.ceil(category.emojis.length / emojisPerRow)
     * (EMOJI_SIZE_PICKER + (isMobile ? EMOJI_VERTICAL_MARGIN_MOBILE : EMOJI_VERTICAL_MARGIN));
 
+  const emojiList = useMemo(() => allEmojis && category?.emojis?.reduce?.((acc, name) => {
+    const emoji = allEmojis[name];
+    if (!emoji) {
+      return acc;
+    }
+    const displayedEmoji = 'id' in emoji ? emoji : emoji[1];
+
+    acc.push(displayedEmoji);
+    return acc;
+  }, [] as Emoji[]), [allEmojis, category]);
+
+  if (emojiList?.length === 0) {
+    return undefined;
+  }
   return (
     <div
       ref={ref}
@@ -58,7 +72,7 @@ const EmojiCategory: FC<OwnProps> = ({
       id={`emoji-category-${index}`}
       className="symbol-set"
     >
-      <div className="symbol-set-header">
+      <div className="symbol-set-header symbol-set-header-center">
         <p className="symbol-set-name" dir="auto">
           {lang(category.id === RECENT_SYMBOL_SET_ID ? 'RecentStickers' : `Emoji${index}`)}
         </p>

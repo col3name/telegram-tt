@@ -1,4 +1,5 @@
 import type { GlobalState } from '../types';
+import type {ApiWallpaper} from "../../api/types";
 
 export function selectNotifySettings<T extends GlobalState>(global: T) {
   return global.settings.byKey;
@@ -26,4 +27,10 @@ export function selectNewNoncontactPeersRequirePremium<T extends GlobalState>(gl
 
 export function selectShouldHideReadMarks<T extends GlobalState>(global: T) {
   return global.settings.byKey.shouldHideReadMarks;
+}
+
+export function selectLoadedTgWallpapers<T extends GlobalState>(global: T): ApiWallpaper[] {
+  return (global.settings.loadedWallpapers || []).filter((wallpaper: ApiWallpaper) => (
+    wallpaper.document.mimeType === 'application/x-tgwallpattern'
+  ));
 }

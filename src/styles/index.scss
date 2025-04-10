@@ -58,6 +58,11 @@ noscript {
 
 html.theme-dark {
   color-scheme: dark;
+  --color-esg-background: rgb(26, 26, 26);
+  --color-esg-input: rgb(40, 40, 40);
+  --color-esg-emoji: rgb(170, 170, 170);
+  --color-esg-emoji-active: rgb(52, 52, 52);
+  --color-esg-emoji-active-color: rgb(255, 255, 255);
 }
 
 body.is-ios,
@@ -349,7 +354,7 @@ body:not(.is-ios) {
 
 .component-theme-dark {
   --color-background: rgb(33, 33, 33);
-  --color-background-compact-menu: rgb(33, 33, 33, 0.867);
+  --color-background-compact-menu: rgba(202, 0, 0, 0.87);
   --color-background-compact-menu-reactions: rgb(33, 33, 33, 0.867);
   --color-background-compact-menu-hover: rgb(0, 0, 0, 0.4);
   --color-background-menu-separator: rgba(255, 255, 255, 0.102);
@@ -415,4 +420,9 @@ body:not(.is-ios) {
   --color-forum-unread-topic-hover: rgb(54, 54, 54);
   --color-forum-hover-unread-topic-hover: rgb(63, 63, 63);
   --color-chat-username: rgb(233, 238, 244);
+  --color-esg-background: rgb(26, 26, 26);
+  --color-esg-input: rgb(40, 40, 40);
+  --color-esg-emoji: rgb(81, 81, 81);
+  --color-esg-emoji-active: rgb(52, 52, 52);
+  --color-esg-emoji-active-color: rgb(188, 188, 188);
 }
