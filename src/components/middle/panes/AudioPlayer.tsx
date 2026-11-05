@@ -12,6 +12,7 @@ import type { IconName } from '../../../types/icons';
 import type { TrackKey } from '../../../util/audioPlayback/mediaPool';
 
 import { PLAYBACK_RATE_FOR_AUDIO_MIN_DURATION } from '../../../config';
+import { requestMutation } from '../../../lib/fasterdom/fasterdom';
 import {
   getMediaFormat, getMediaHash, hasMessageTtl, isMessageLocal,
 } from '../../../global/helpers';
@@ -32,7 +33,7 @@ import {
 } from '../../../global/selectors/audioPlayer';
 import { selectMessageMediaDuration } from '../../../global/selectors/media';
 import { selectUserSavedMusic } from '../../../global/selectors/users';
-import { ensureAudioContext } from '../../../util/audioPlayback/audioAnalyser';
+import { ensureAudioContext, getCurrentTrackAnalyser } from '../../../util/audioPlayback/audioAnalyser';
 import {
   cancelPlaybackIntent,
   getProgressSignal,
@@ -132,6 +133,74 @@ const PLAYBACK_RATE_VALUES = Object.keys(PLAYBACK_RATES).sort().map(Number);
 const PLAY_PAUSE_ICON_SIZE = 32;
 const REGULAR_PLAYBACK_RATE = 1;
 const DEFAULT_FAST_PLAYBACK_RATE = 2;
+const PULSE_FALLBACK_PERIOD = 180;
+const PULSE_BAR_COUNT = 5;
+const PULSE_RANDOM_SEED = 7.137;
+const PULSE_BAR_SEEDS = [0.4, 1.7, 3.1, 4.8, 5.9];
+
+type PlayerPulseProps = { isPlaying: boolean; isAudio: boolean };
+
+const PlayerPulse = ({ isPlaying, isAudio }: PlayerPulseProps) => {
+  const pulseRef = useRef<HTMLDivElement>();
+  const barsRef = useRef<HTMLDivElement>();
+
+  useEffect(() => {
+    const pulse = pulseRef.current;
+    const barsContainer = barsRef.current;
+    if (!pulse || !barsContainer || !isPlaying || !isAudio) return undefined;
+
+    const bars = barsContainer.querySelectorAll<HTMLElement>('[data-pulse-bar]');
+    const data = new Uint8Array(64);
+    let animationFrameId: number;
+    let isUnmounted = false;
+
+    const renderFrame = () => {
+      if (isUnmounted) return;
+      const analyser = getCurrentTrackAnalyser();
+      const now = performance.now();
+      let level = 0.2 + (Math.sin(now / PULSE_FALLBACK_PERIOD) + 1) * 0.14;
+      if (analyser) {
+        analyser.getByteFrequencyData(data);
+        const average = data.reduce((sum, value) => sum + value, 0) / data.length / 255;
+        const peak = Math.max(...data) / 255;
+        level = Math.min(1, average * 0.7 + peak * 0.65);
+      }
+
+      const heights = Array.from(bars, (bar, index) => {
+        const offset = Math.round((index + 1) * data.length / (PULSE_BAR_COUNT + 1));
+        const phase = PULSE_RANDOM_SEED + PULSE_BAR_SEEDS[index] + now / 180;
+        const barLevel = analyser
+          ? data[offset] / 255 * (0.84 + Math.sin(phase) * 0.16)
+          : level * (0.75 + Math.sin(phase) * 0.2);
+        return `${0.35 + barLevel * 0.9}rem`;
+      });
+
+      requestMutation(() => {
+        bars.forEach((bar, index) => bar.style.setProperty('--pulse-bar-height', heights[index]));
+        pulse.style.setProperty('--pulse-opacity', String(0.2 + level * 0.4));
+        pulse.style.setProperty('--pulse-scale-x', String(0.88 + level * 0.28));
+        pulse.style.setProperty('--pulse-scale-y', String(0.76 + level * 0.22));
+        pulse.style.setProperty('--pulse-shadow', `${0.3 + level * 1.2}rem`);
+      });
+      animationFrameId = requestAnimationFrame(renderFrame);
+    };
+
+    animationFrameId = requestAnimationFrame(renderFrame);
+    return () => {
+      isUnmounted = true;
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isAudio, isPlaying]);
+
+  return (
+    <>
+      <div ref={pulseRef} className={styles.pulseLayer} aria-hidden><div className={styles.pulse} /></div>
+      <div ref={barsRef} className={buildClassName(styles.pulseBars, isPlaying && isAudio && styles.pulseBarsActive)} aria-hidden>
+        {Array.from({ length: PULSE_BAR_COUNT }, (_, index) => <span key={index} data-pulse-bar className={styles.pulseBar} />)}
+      </div>
+    </>
+  );
+};
 
 const AudioPlayer = ({
   message,
@@ -343,6 +412,12 @@ const AudioPlayer = ({
   }, [isPlaying, message?.isDeleting, playPause]);
 
   const handleClick = useLastCallback(() => {
+    if (audio && hasPlaybackModes) {
+      ensureAudioContext();
+      openAudioPlaylistModal();
+      return;
+    }
+
     if (!renderingMessage) {
       if (item?.type === 'instantView') {
         openBrowserTab({ tab: { type: 'instantView', webPageId: item.webPageId } });
@@ -368,6 +443,11 @@ const AudioPlayer = ({
 
   const handleClose = useLastCallback(() => {
     closeAudioPlayer();
+  });
+
+  const handlePlayPause = useLastCallback(() => {
+    if (!isPlaying) ensureAudioContext();
+    playPause();
   });
 
   const handleToggleMusicInProfile = useLastCallback(() => {
@@ -530,7 +610,7 @@ const AudioPlayer = ({
           color="translucent"
           size="smaller"
           className={buildClassName('toggle-play', styles.playerButton)}
-          onClick={playPause}
+          onClick={handlePlayPause}
           ariaLabel={lang(isPlaying ? 'AudioPause' : 'AudioPlay')}
         >
           <PlayPauseIcon
@@ -544,6 +624,7 @@ const AudioPlayer = ({
           {audio ? renderAudio(audio, timeNode) : renderVoice(voiceTitle, senderName)}
           <RippleEffect />
         </div>
+        <PlayerPulse isPlaying={isPlaying} isAudio={Boolean(audio)} />
         <Button
           round
           className={styles.playerClose}
@@ -593,7 +674,7 @@ const AudioPlayer = ({
         color="translucent"
         size="smaller"
         className={buildClassName('toggle-play', styles.playerButton)}
-        onClick={playPause}
+        onClick={handlePlayPause}
         ariaLabel={lang(isPlaying ? 'AudioPause' : 'AudioPlay')}
       >
         <PlayPauseIcon
@@ -621,6 +702,7 @@ const AudioPlayer = ({
         {audio ? renderAudio(audio, timeNode) : renderVoice(voiceTitle, senderName)}
         <RippleEffect />
       </div>
+      <PlayerPulse isPlaying={isPlaying} isAudio={Boolean(audio)} />
 
       <ShowTransition
         isOpen={Boolean(audio && renderingItem?.type !== 'instantView'
@@ -656,7 +738,7 @@ const AudioPlayer = ({
           ripple={!isMobile}
           color="translucent"
           size="smaller"
-          className={styles.playerButton}
+          className={buildClassName(styles.playerButton, styles.playlistButton)}
           onClick={handleOpenPlaylist}
           ariaLabel={lang('AudioOpenPlaylist')}
           iconName="list"

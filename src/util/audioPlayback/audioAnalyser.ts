@@ -3,7 +3,7 @@ import { onElementDestroy, peek } from './mediaPool';
 import { getState, isCurrentElementPlaying } from './playbackController';
 
 const FFT_SIZE = 2048;
-const SMOOTHING = 0.85;
+const SMOOTHING = 0.65;
 
 let audioContext: AudioContext | undefined;
 const analyserByElement = new WeakMap<HTMLAudioElement, AnalyserNode>();
@@ -33,8 +33,7 @@ export function getCurrentTrackAnalyser() {
   if (!trackKey) return undefined;
 
   const element = peek(trackKey);
-  // Inline videos are reused after release and keep their own audio output
-  if (!element || element instanceof HTMLVideoElement) return undefined;
+  if (!element) return undefined;
 
   let analyser = analyserByElement.get(element);
   if (!analyser) {

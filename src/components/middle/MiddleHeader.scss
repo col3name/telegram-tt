@@ -153,6 +153,17 @@
     align-items: center;
     padding-block: 0.0625rem;
 
+    .voice-pulse-avatar {
+      position: relative;
+      display: flex;
+      flex: none;
+      align-items: center;
+
+      > .Avatar {
+        margin-right: 0;
+      }
+    }
+
     .info {
       display: flex;
       flex-direction: column;

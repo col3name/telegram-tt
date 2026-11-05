@@ -1,12 +1,10 @@
 import { memo, useState } from '../../../lib/teact/teact';
-import { getActions, getGlobal } from '../../../global';
+import { getActions } from '../../../global';
 
 import type { ApiAudio } from '../../../api/types';
 
 import { getMediaFormat, getMediaHash } from '../../../global/helpers';
-import {
-  getPlaybackCapabilities, selectPlaybackItem, selectPlaybackSource,
-} from '../../../global/selectors/audioPlayer';
+import { getPlaybackCapabilities } from '../../../global/selectors/audioPlayer';
 import { ensureAudioContext } from '../../../util/audioPlayback/audioAnalyser';
 import { makeSavedMusicTrackKey } from '../../../util/audioPlayback/mediaPool';
 import * as playbackController from '../../../util/audioPlayback/playbackController';
@@ -46,7 +44,7 @@ const ProfileMusicStrip = ({
     setActivatedAudioId(undefined);
   });
 
-  const { playPause } = useAudioPlayback({
+  const { isPlaying, playPause } = useAudioPlayback({
     trackKey,
     mediaType: 'audio',
     capabilities: SAVED_MUSIC_CAPABILITIES,
@@ -58,24 +56,17 @@ const ProfileMusicStrip = ({
   });
 
   const handleClick = useLastCallback(() => {
-    const global = getGlobal();
-    const source = selectPlaybackSource(global);
-    // Closing the player keeps the source, so an active playlist is only the one that still has a track
-    const isPeerPlaylistActive = source?.type === 'savedMusic' && source.peerId === peerId
-      && selectPlaybackItem(global)?.type === 'savedMusic';
+    ensureAudioContext();
+    playbackController.prepareTrackSwitch(trackKey);
+    openAudioPlayer({
+      item: { type: 'savedMusic', peerId, audioId: audio.id },
+      source: { type: 'savedMusic', peerId },
+    });
 
-    if (!isPeerPlaylistActive) {
-      ensureAudioContext();
-      playbackController.prepareTrackSwitch(trackKey);
-      openAudioPlayer({
-        item: { type: 'savedMusic', peerId, audioId: audio.id },
-        source: { type: 'savedMusic', peerId },
-      });
-      if (isActivated) {
-        playPause();
-      } else {
-        setActivatedAudioId(audio.id);
-      }
+    if (isActivated) {
+      if (!isPlaying) playPause();
+    } else {
+      setActivatedAudioId(audio.id);
     }
 
     openAudioPlaylistModal();

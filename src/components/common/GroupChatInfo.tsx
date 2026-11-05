@@ -1,4 +1,6 @@
-import { memo, useEffect, useMemo } from '../../lib/teact/teact';
+import {
+  memo, useEffect, useMemo, useState,
+} from '../../lib/teact/teact';
 import { getActions, getGlobal, withGlobal } from '../../global';
 
 import type {
@@ -11,7 +13,7 @@ import {
   getChatTypeLangKey,
   getGroupStatus,
   getMainUsername,
-  isChatSuperGroup,
+  isChatChannel, isChatSuperGroup,
 } from '../../global/helpers';
 import {
   selectChat,
@@ -23,6 +25,9 @@ import {
   selectUser,
 } from '../../global/selectors';
 import { selectThreadMessagesCount } from '../../global/selectors/threads';
+import {
+  getState as getPlaybackState, subscribe as subscribePlayback,
+} from '../../util/audioPlayback/playbackController';
 import buildClassName from '../../util/buildClassName';
 import { REM } from './helpers/mediaDimensions';
 import renderText from './helpers/renderText';
@@ -35,6 +40,7 @@ import Avatar from './Avatar';
 import DotAnimation from './DotAnimation';
 import FullNameTitle from './FullNameTitle';
 import Icon from './icons/Icon';
+import PlayingRing from './PlayingRing';
 import TopicIcon from './TopicIcon';
 import TypingStatus from './TypingStatus';
 
@@ -63,6 +69,7 @@ type OwnProps = {
   storyViewerOrigin?: StoryViewerOrigin;
   isSavedDialog?: boolean;
   withMonoforumStatus?: boolean;
+  withVoicePulse?: boolean;
   onClick?: VoidFunction;
   onEmojiStatusClick?: VoidFunction;
 };
@@ -104,6 +111,7 @@ const GroupChatInfo = ({
   isSavedDialog,
   self,
   withMonoforumStatus,
+  withVoicePulse,
   monoforumChannel,
   onClick,
   onEmojiStatusClick,
@@ -115,6 +123,20 @@ const GroupChatInfo = ({
   } = getActions();
 
   const chat = !withMonoforumStatus && monoforumChannel ? monoforumChannel : realChat;
+
+  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
+
+  useEffect(() => {
+    function updateVoicePlaying() {
+      const { trackKey, mediaType, isPlaying } = getPlaybackState();
+      const chatKey = chat?.id && `msg:${chat.id}:`;
+      setIsVoicePlaying(Boolean(withVoicePulse && chat && isChatChannel(chat) && !chat.areProfilesShown && chatKey
+        && isPlaying && mediaType === 'voice' && trackKey?.startsWith(chatKey)));
+    }
+
+    updateVoicePlaying();
+    return subscribePlayback(updateVoicePlaying);
+  }, [chat?.id, chat, withVoicePulse]);
 
   const lang = useLang();
 
@@ -246,18 +268,21 @@ const GroupChatInfo = ({
               className="saved-dialog-avatar"
             />
           )}
-          <Avatar
-            key={chat.id}
-            className={buildClassName(isSavedDialog && 'overlay-avatar')}
-            size={avatarSize}
-            peer={chat}
-            withStory={withStory}
-            asMessageBubble={Boolean(monoforumChannel)}
-            storyViewerOrigin={storyViewerOrigin}
-            storyViewerMode="single-peer"
-            isSavedDialog={isSavedDialog}
-            onClick={withMediaViewer ? handleAvatarViewerOpen : undefined}
-          />
+          <div className="voice-pulse-avatar">
+            <Avatar
+              key={chat.id}
+              className={buildClassName(isSavedDialog && 'overlay-avatar')}
+              size={avatarSize}
+              peer={chat}
+              withStory={withStory}
+              asMessageBubble={Boolean(monoforumChannel)}
+              storyViewerOrigin={storyViewerOrigin}
+              storyViewerMode="single-peer"
+              isSavedDialog={isSavedDialog}
+              onClick={withMediaViewer ? handleAvatarViewerOpen : undefined}
+            />
+            {isVoicePlaying && <PlayingRing noSyntheticLoudness withGlow />}
+          </div>
         </>
       )}
       {isTopic && (

@@ -321,6 +321,7 @@ const MiddleHeader = ({
               storyViewerOrigin={StoryViewerOrigin.MiddleHeaderAvatar}
               emojiStatusSize={EMOJI_STATUS_SIZE}
               noRtl
+              withVoicePulse
               onEmojiStatusClick={handleUserStatusClick}
             />
           ) : (
@@ -341,6 +342,7 @@ const MiddleHeader = ({
               emojiStatusSize={EMOJI_STATUS_SIZE}
               onEmojiStatusClick={handleChannelStatusClick}
               noRtl
+              withVoicePulse
             />
           )}
         </div>

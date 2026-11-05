@@ -11,6 +11,25 @@
   color: var(--accent-color, var(--color-primary));
 }
 
+.withGlow {
+  top: 50%;
+  left: 50%;
+  width: 3.25rem;
+  height: 3.25rem;
+  transform: translate(-50%, -50%);
+  opacity: var(--pulse-opacity, 0.72);
+  filter: drop-shadow(0 0 var(--pulse-blur, 0.2rem) currentColor);
+  transition: filter 0.1s linear, opacity 0.1s linear;
+}
+
+.glow {
+  opacity: var(--pulse-glow-opacity, 0.12);
+  filter: blur(0.2rem);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 8;
+}
+
 .withCutout {
   mask-image: radial-gradient(circle at 3.21875rem 3.21875rem, transparent 0.75rem, #000 0.8125rem);
 }

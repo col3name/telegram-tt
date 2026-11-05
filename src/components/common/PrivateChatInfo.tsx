@@ -1,4 +1,6 @@
-import { memo, useEffect, useMemo } from '../../lib/teact/teact';
+import {
+  memo, useEffect, useMemo, useState,
+} from '../../lib/teact/teact';
 import { getActions, withGlobal } from '../../global';
 
 import type {
@@ -18,6 +20,9 @@ import {
   selectUserStatus,
 } from '../../global/selectors';
 import { selectThreadMessagesCount } from '../../global/selectors/threads';
+import {
+  getState as getPlaybackState, subscribe as subscribePlayback,
+} from '../../util/audioPlayback/playbackController';
 import buildClassName from '../../util/buildClassName';
 import { hasRank } from './helpers/chatMember';
 import { REM } from './helpers/mediaDimensions';
@@ -33,6 +38,7 @@ import Avatar from './Avatar';
 import DotAnimation from './DotAnimation';
 import FullNameTitle from './FullNameTitle';
 import Icon from './icons/Icon';
+import PlayingRing from './PlayingRing';
 import RankBadge from './RankBadge';
 import TopicIcon from './TopicIcon';
 import TypingStatus from './TypingStatus';
@@ -64,6 +70,7 @@ type BaseOwnProps = {
   chatMember?: ApiChatMember;
   isSavedDialog?: boolean;
   noAvatar?: boolean;
+  withVoicePulse?: boolean;
   className?: string;
   iconElement?: React.ReactNode;
   rightElement?: React.ReactNode;
@@ -128,6 +135,7 @@ const PrivateChatInfo = ({
   className,
   storyViewerOrigin,
   noAvatar,
+  withVoicePulse,
   isSynced,
   iconElement,
   rightElement,
@@ -144,6 +152,20 @@ const PrivateChatInfo = ({
 
   const isTopic = Boolean(user?.isBotForum && topic);
   const hasAvatarMediaViewer = withMediaViewer && !isSavedMessages;
+
+  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
+
+  useEffect(() => {
+    function updateVoicePlaying() {
+      const { trackKey, mediaType, isPlaying } = getPlaybackState();
+      const chatKey = userId && `msg:${userId}:`;
+      setIsVoicePlaying(Boolean(withVoicePulse && chatKey && isPlaying
+        && mediaType === 'voice' && trackKey?.startsWith(chatKey)));
+    }
+
+    updateVoicePlaying();
+    return subscribePlayback(updateVoicePlaying);
+  }, [userId, withVoicePulse]);
 
   useEffect(() => {
     if (userId) {
@@ -304,18 +326,21 @@ const PrivateChatInfo = ({
         />
       )}
       {!noAvatar && !isTopic && (
-        <Avatar
-          key={user?.id}
-          size={avatarSize}
-          peer={customPeer || user}
-          className={buildClassName(isSavedDialog && 'overlay-avatar')}
-          isSavedMessages={isSavedMessages}
-          isSavedDialog={isSavedDialog}
-          withStory={withStory}
-          storyViewerOrigin={storyViewerOrigin}
-          storyViewerMode="single-peer"
-          onClick={hasAvatarMediaViewer ? handleAvatarViewerOpen : undefined}
-        />
+        <div className="voice-pulse-avatar">
+          <Avatar
+            key={user?.id}
+            size={avatarSize}
+            peer={customPeer || user}
+            className={buildClassName(isSavedDialog && 'overlay-avatar')}
+            isSavedMessages={isSavedMessages}
+            isSavedDialog={isSavedDialog}
+            withStory={withStory}
+            storyViewerOrigin={storyViewerOrigin}
+            storyViewerMode="single-peer"
+            onClick={hasAvatarMediaViewer ? handleAvatarViewerOpen : undefined}
+          />
+          {isVoicePlaying && <PlayingRing noSyntheticLoudness withGlow />}
+        </div>
       )}
       {isTopic && (
         <TopicIcon

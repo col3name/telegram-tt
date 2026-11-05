@@ -1,10 +1,13 @@
-import { memo } from '../../../lib/teact/teact';
+import {
+  memo, useEffect, useRef, useState,
+} from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
 import type { ApiAudio, ApiMessage, ApiPeer } from '../../../api/types';
 import type { OrderMode, PlaybackItemRef, RepeatMode, ThreadId } from '../../../types';
 import { ApiMediaFormat } from '../../../api/types';
 
+import { requestMutation } from '../../../lib/fasterdom/fasterdom';
 import {
   getIsDownloading, getMediaHash, getMessageContent, isMessageLocal,
 } from '../../../global/helpers';
@@ -16,6 +19,7 @@ import {
 import {
   selectCanGoNext, selectCanGoPrev, selectPlaybackMedia, selectPlaybackMessage, selectPlaybackSource,
 } from '../../../global/selectors/audioPlayer';
+import { getCurrentTrackAnalyser } from '../../../util/audioPlayback/audioAnalyser';
 import { getProgressSignal } from '../../../util/audioPlayback/playbackController';
 import buildClassName from '../../../util/buildClassName';
 import { formatMediaDuration } from '../../../util/dates/duration';
@@ -62,6 +66,79 @@ type StateProps = {
   playbackItem?: PlaybackItemRef;
   savedMusicPeerId?: string;
   threadId?: ThreadId;
+};
+
+const PLAYLIST_PULSE_BAR_COUNT = 5;
+const PLAYLIST_PULSE_SEEDS = [0.4, 1.7, 3.1, 4.8, 5.9];
+
+type MarqueeTitleProps = {
+  children: React.ReactNode;
+};
+
+const MarqueeTitle = ({ children }: MarqueeTitleProps) => {
+  const titleRef = useRef<HTMLDivElement>();
+  const [marqueeDistance, setMarqueeDistance] = useState(0);
+
+  useEffect(() => {
+    const title = titleRef.current;
+    if (!title) return undefined;
+
+    const updateOverflow = () => {
+      setMarqueeDistance(title.scrollWidth > title.clientWidth
+        ? title.clientWidth - title.scrollWidth : 0);
+    };
+
+    updateOverflow();
+    const resizeObserver = new ResizeObserver(updateOverflow);
+    resizeObserver.observe(title);
+
+    return () => resizeObserver.disconnect();
+  }, [children]);
+
+  const isOverflowing = marqueeDistance < 0;
+
+  return (
+    <div
+      ref={titleRef}
+      className={buildClassName(styles.nowPlayingTitle, isOverflowing && styles.nowPlayingTitleMarquee)}
+      style={isOverflowing ? `--marquee-distance: ${marqueeDistance}px` : undefined}
+      dir="auto"
+    >
+      <span className={isOverflowing ? styles.marqueeText : undefined}>{children}</span>
+    </div>
+  );
+};
+
+const PlaylistPulseBars = ({ isPlaying, isAudio }: { isPlaying: boolean; isAudio: boolean }) => {
+  const barsRef = useRef<HTMLDivElement>();
+
+  useEffect(() => {
+    const container = barsRef.current;
+    if (!container || !isPlaying || !isAudio) return undefined;
+    const bars = container.querySelectorAll<HTMLElement>('[data-playlist-pulse-bar]');
+    const data = new Uint8Array(64);
+    let animationFrameId: number;
+    const renderFrame = () => {
+      const analyser = getCurrentTrackAnalyser();
+      const time = performance.now() / 220;
+      if (analyser) analyser.getByteFrequencyData(data);
+      const heights = Array.from(bars, (_, index) => {
+        const offset = Math.round((index + 1) * data.length / (PLAYLIST_PULSE_BAR_COUNT + 1));
+        const level = analyser ? data[offset] / 255 : 0.28 + (Math.sin(time + PLAYLIST_PULSE_SEEDS[index]) + 1) * 0.08;
+        return String(0.35 + level * 0.9);
+      });
+      requestMutation(() => bars.forEach((bar, index) => bar.style.setProperty('--playlist-pulse-scale', heights[index])));
+      animationFrameId = requestAnimationFrame(renderFrame);
+    };
+    animationFrameId = requestAnimationFrame(renderFrame);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isAudio, isPlaying]);
+
+  return (
+    <div ref={barsRef} className={buildClassName(styles.playlistPulseBars, isPlaying && isAudio && styles.playlistPulseBarsActive)} aria-hidden>
+      {Array.from({ length: PLAYLIST_PULSE_BAR_COUNT }, (_, index) => <span key={index} data-playlist-pulse-bar className={styles.playlistPulseBar} />)}
+    </div>
+  );
 };
 
 const PlaylistControls = ({
@@ -205,15 +282,15 @@ const PlaylistControls = ({
     <>
       <Island className={styles.controls}>
         <div className={styles.nowPlaying}>
-          <div className={styles.nowPlayingCover}>
-            {coverBlobUrl ? (
-              <img src={coverBlobUrl} alt="" className={styles.trackCoverImage} draggable={false} />
-            ) : (
-              <Icon name="music-note" className={styles.trackCoverIcon} />
-            )}
+          <div className={styles.nowPlayingCoverWrapper}>
+            <div className={styles.nowPlayingCover}>
+              {coverBlobUrl ? <img src={coverBlobUrl} alt="" className={styles.trackCoverImage} draggable={false} />
+                : <Icon name="music-note" className={styles.trackCoverIcon} />}
+              <PlaylistPulseBars isPlaying={isPlaying} isAudio={Boolean(audio)} />
+            </div>
           </div>
           <div className={styles.nowPlayingInfo}>
-            <div className={styles.nowPlayingTitle} dir="auto">{renderText(title || lang('AttachAudio'))}</div>
+            <MarqueeTitle>{renderText(title || lang('AttachAudio'))}</MarqueeTitle>
             {subtitle && <div className={styles.nowPlayingSubtitle} dir="auto">{renderText(subtitle)}</div>}
           </div>
         </div>

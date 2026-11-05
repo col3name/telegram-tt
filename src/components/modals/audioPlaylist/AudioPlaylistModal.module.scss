@@ -1,7 +1,11 @@
 .modal {
   :global(.modal-dialog) {
     max-width: 22.5rem;
-    background-color: var(--color-background-secondary);
+    border-radius: 1.25rem;
+    overflow: hidden;
+
+    background-color: color-mix(in srgb, var(--color-background-secondary) 88%, transparent);
+    backdrop-filter: blur(0.75rem) saturate(1.08);
   }
 }
 
@@ -10,6 +14,7 @@
   flex-direction: column;
   padding: 1rem;
   padding-top: 0;
+  border-radius: 0 0 1.25rem 1.25rem;
 }
 
 .listIsland {
@@ -134,12 +139,42 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
+  border-radius: 1.25rem;
+
+  background-color: color-mix(in srgb, var(--color-background) 90%, transparent);
+  backdrop-filter: blur(0.5rem);
 }
 
 .nowPlaying {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+}
+
+.nowPlayingCoverWrapper { position: relative; flex-shrink: 0; }
+.playlistPulseBars {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: inherit;
+
+  display: flex;
+  gap: 0.125rem;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  background: rgb(0 0 0 / 35%);
+  transition: opacity 0.15s ease-out;
+}
+.playlistPulseBarsActive { opacity: 1; }
+.playlistPulseBar {
+  width: 0.1875rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  background: var(--color-white);
+  transform: scaleY(var(--playlist-pulse-scale, 0.5));
+  transition: transform 0.1s ease-out;
 }
 
 .nowPlayingCover {
@@ -171,6 +206,33 @@
   color: var(--color-text);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.nowPlayingTitleMarquee {
+  text-overflow: clip;
+}
+
+.marqueeText {
+  will-change: transform;
+  display: inline-block;
+  padding-inline-end: 2rem;
+  animation: nowPlayingMarquee 16s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes nowPlayingMarquee {
+  0%,
+  18% {
+    transform: translateX(0);
+  }
+
+  52%,
+  68% {
+    transform: translateX(var(--marquee-distance));
+  }
+
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .nowPlayingSubtitle {

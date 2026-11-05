@@ -11,26 +11,28 @@ import styles from './PlayingRing.module.scss';
 type OwnProps = {
   withCutout?: boolean;
   isPaused?: boolean;
+  noSyntheticLoudness?: boolean;
+  withGlow?: boolean;
   className?: string;
 };
 
 const TICK_COUNT = 52;
 const CENTER = 34;
-const INNER_RADIUS = 26;
+const INNER_RADIUS = 29;
 
 const MIN_TICK_LENGTH = 0.4;
-const MAX_TICK_LENGTH = 6;
+const MAX_TICK_LENGTH = 16;
 const MIN_FREQUENCY = 31.5;
 const MAX_FREQUENCY = 16000;
-const HIGH_FREQUENCY_BOOST = 0.5;
-const LOUDNESS_EXPONENT = 1.4;
+const HIGH_FREQUENCY_BOOST = 0.75;
+const LOUDNESS_EXPONENT = 1.1;
 const SYNTHETIC_BASE = 0.35;
 const HALF_TICK_COUNT = TICK_COUNT / 2;
 const NYQUIST_DIVISOR = 2;
 const MS_IN_SECOND = 1000;
 const MAX_BYTE_VALUE = 255;
 const SYNTHETIC_WAVES: [amplitude: number, speed: number, spread: number][] = [[0.3, 2.4, 0.35], [0.2, -1.3, 0.6]];
-const TICK_EASING = 0.22;
+const TICK_EASING = 0.35;
 const SETTLED_THRESHOLD = 0.005;
 
 const ANGLES = Array.from({ length: TICK_COUNT }, (_, i) => (360 / TICK_COUNT) * i);
@@ -60,9 +62,10 @@ function fillSyntheticLoudness(loudness: Float32Array) {
   }
 }
 
-const PlayingRing = ({ withCutout, isPaused, className }: OwnProps) => {
+const PlayingRing = ({ withCutout, isPaused, noSyntheticLoudness, withGlow, className }: OwnProps) => {
   const lang = useLang();
 
+  const rootRef = useRef<SVGSVGElement>();
   const ticksRef = useRef<SVGGElement>();
   const loudnessRef = useRef(new Float32Array(TICK_COUNT));
 
@@ -85,6 +88,13 @@ const PlayingRing = ({ withCutout, isPaused, className }: OwnProps) => {
         const length = MIN_TICK_LENGTH + loudness[i] * (MAX_TICK_LENGTH - MIN_TICK_LENGTH);
         lines[i].setAttribute('y2', String(CENTER - INNER_RADIUS - length));
       }
+
+      if (rootRef.current) {
+        const pulseStrength = loudness.reduce((sum, value) => sum + value, 0) / loudness.length;
+        rootRef.current.style.setProperty('--pulse-blur', `${0.2 + pulseStrength * 0.8}rem`);
+        rootRef.current.style.setProperty('--pulse-opacity', String(0.72 + pulseStrength * 0.28));
+        rootRef.current.style.setProperty('--pulse-glow-opacity', String(0.12 + pulseStrength * 0.28));
+      }
     };
 
     const fillTarget = () => {
@@ -95,7 +105,8 @@ const PlayingRing = ({ withCutout, isPaused, className }: OwnProps) => {
 
       const analyser = getCurrentTrackAnalyser();
       if (!analyser) {
-        fillSyntheticLoudness(target);
+        if (noSyntheticLoudness) target.fill(0);
+        else fillSyntheticLoudness(target);
         return;
       }
 
@@ -108,7 +119,10 @@ const PlayingRing = ({ withCutout, isPaused, className }: OwnProps) => {
 
       for (let i = 0; i < target.length; i++) {
         const { bin, gain } = bands![i];
-        target[i] = Math.min(1, (data[bin] / MAX_BYTE_VALUE) ** LOUDNESS_EXPONENT * gain);
+        const previousBin = Math.max(0, bin - 1);
+        const nextBin = Math.min(data.length - 1, bin + 1);
+        const level = (data[previousBin] + data[bin] + data[nextBin]) / (MAX_BYTE_VALUE * 3);
+        target[i] = Math.min(1, level ** LOUDNESS_EXPONENT * gain);
       }
     };
 
@@ -137,16 +151,24 @@ const PlayingRing = ({ withCutout, isPaused, className }: OwnProps) => {
       isUnmounted = true;
       cancelAnimationFrame(rafId);
     };
-  }, [isPaused]);
+  }, [isPaused, noSyntheticLoudness]);
 
   return (
     <svg
+      ref={rootRef}
       className={buildClassName(
-        styles.root, withCutout && styles.withCutout, withCutout && lang.isRtl && styles.rtl, className,
+        styles.root,
+        withCutout && styles.withCutout,
+        withCutout && lang.isRtl && styles.rtl,
+        withGlow && styles.withGlow,
+        className,
       )}
-      viewBox="0 0 68 68"
+      viewBox="-4 -4 76 76"
       aria-hidden
     >
+      {withGlow && (
+        <circle className={styles.glow} cx={CENTER} cy={CENTER} r={INNER_RADIUS + 1} />
+      )}
       <g ref={ticksRef}>
         {ANGLES.map((angle) => (
           <g key={angle} transform={`rotate(${angle} ${CENTER} ${CENTER})`}>

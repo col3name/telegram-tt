@@ -249,7 +249,7 @@ const TrackRow = ({
     }
 
     if (!isPlaying) {
-      if (withPlayingRing) ensureAudioContext();
+      if (withPlayingRing || mediaType === 'voice') ensureAudioContext();
       onBeforePlay?.();
     }
 
